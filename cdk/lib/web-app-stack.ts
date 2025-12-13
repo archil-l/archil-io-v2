@@ -134,16 +134,6 @@ export class WebAppStack extends cdk.Stack {
       value: remixFunction.functionArn,
     });
 
-    new cdk.CfnOutput(this, "RemixFunctionIamRole", {
-      description: "Implicit IAM Role created for Remix function",
-      value: remixFunction.role?.roleArn || "No role found",
-    });
-
-    new cdk.CfnOutput(this, "RemixAssetsBucketName", {
-      description: "S3 bucket for static assets",
-      value: assetsBucket.bucketName,
-    });
-
     new cdk.CfnOutput(this, "RemixCloudFrontUrl", {
       description: "CloudFront distribution URL for static assets",
       value: `https://${distribution.distributionDomainName}`,
