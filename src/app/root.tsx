@@ -1,7 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
 
-import "./tailwind.css";
+import "./css/tailwind.css";
 import { AppSidebar } from "./layout/app-sidebar";
 import {
   SidebarInset,
@@ -23,8 +23,6 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  console.log("this one");
-
   return (
     <html lang="en">
       <head>

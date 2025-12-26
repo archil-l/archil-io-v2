@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./fonts.css";
 
 @plugin "tailwindcss-animate";
 
@@ -127,13 +128,6 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-@font-face {
-  font-family: "Amazon Ember";
-  src: url("/fonts/AmazonEmber_Lt.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -141,5 +135,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Amazon Ember", sans-serif;
+    font-weight: 300;
   }
 }

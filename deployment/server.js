@@ -45,6 +45,12 @@ if (viteDevServer) {
     app.use("/logo-light.png", (req, res) => {
       res.redirect(302, `${cloudfrontUrl}/logo-light.png`);
     });
+    app.use("/fonts", (req, res) => {
+      res.redirect(302, `${cloudfrontUrl}/fonts${req.path}`);
+    });
+    app.use("/avatars", (req, res) => {
+      res.redirect(302, `${cloudfrontUrl}/avatars${req.path}`);
+    });
   } else {
     // Fallback to local assets if CloudFront URL is not available
     app.use(

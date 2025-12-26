@@ -13,7 +13,6 @@ import {
 import { navLinks } from "./navigation";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  console.log("this one?");
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarContent>
