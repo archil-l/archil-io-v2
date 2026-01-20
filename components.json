@@ -15,6 +15,7 @@
     "components": "~/components",
     "utils": "~/lib/utils",
     "ui": "~/components/ui",
+    "ai-elements": "~/components/ai-elements",
     "lib": "~/lib",
     "hooks": "~/hooks"
   },
