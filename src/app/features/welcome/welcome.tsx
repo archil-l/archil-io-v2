@@ -31,7 +31,6 @@ Welcome to my personal page. I'm excited to share my work, projects, and insight
 const predefinedPrompts = [
   "Tell me about your experience",
   "What technologies do you work with?",
-  "Show me your projects",
   "How can I contact you?",
 ];
 
@@ -128,9 +127,9 @@ export default function Welcome() {
       <FloatingMenu onClearConversation={handleClearConversation} />
 
       {/* Main Content */}
-      <div className="mx-auto flex h-full max-w-4xl flex-col p-4 pt-16">
+      <div className="mx-auto flex h-full max-w-3xl flex-col p-4 pt-16">
         {/* Conversation Area */}
-        <Conversation className="flex-1 mb-4">
+        <Conversation className="flex-1 h-full">
           <ConversationContent>
             {messages.map((message) => (
               <div key={message.id}>
@@ -155,16 +154,14 @@ export default function Welcome() {
           <ConversationScrollButton />
         </Conversation>
 
-        {/* Input Area */}
-        <div className="mt-4 mb-16 space-y-6">
-          {/* Prompt Input */}
+        <div className="mt-2 mb-4 space-y-3">
           <PromptInput
             onSubmit={handleSubmit}
             className="mt-4 w-full max-w-2xl mx-auto relative"
           >
             <PromptInputTextarea
               value={input}
-              placeholder="Say something..."
+              placeholder="Ask me anything..."
               onChange={(e) => setInput(e.currentTarget.value)}
               className="pr-12"
             />
@@ -173,13 +170,13 @@ export default function Welcome() {
               className="absolute bottom-1 right-1"
             />
           </PromptInput>
-          {/* Predefined Prompts */}
-          <Suggestions className="pb-2 mt-4 w-full max-w-2xl mx-auto relative flex-wrap justify-center ">
+          <Suggestions className="pb-2 mt-2 w-full max-w-2xl mx-auto relative flex-wrap justify-center">
             {predefinedPrompts.map((prompt) => (
               <Suggestion
                 key={prompt}
                 suggestion={prompt}
                 onClick={handleSuggestionClick}
+                className="font-normal"
               />
             ))}
           </Suggestions>
