@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./typography.css";
 
 @plugin "tailwindcss-animate";
 
@@ -121,15 +122,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer base {
-  html,
-  body {
-    font-size: 22px;
-    font-family: "Lato", sans-serif;
-    font-weight: 400;
-    @apply antialiased;
   }
 }
