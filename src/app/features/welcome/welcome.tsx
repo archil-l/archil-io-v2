@@ -21,7 +21,7 @@ import {
   type MessageType,
 } from "~/lib/session";
 
-const welcomeMsg = `# Welcome! 🖖🏻
+const welcomeMsg = `# Welcome! 🖖🏻 \n\n
 
 My name is Archil Lelashvili, I am a software engineer building dynamic, semantic, accessible, and user-friendly web applications.
 
