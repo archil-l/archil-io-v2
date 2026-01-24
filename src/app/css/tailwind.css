@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./fonts.css";
 
 @plugin "tailwindcss-animate";
 
@@ -129,8 +128,8 @@
   html,
   body {
     font-size: 22px;
-    font-family: "Amazon Ember", sans-serif;
-    font-weight: 300;
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
     @apply antialiased;
   }
 }
