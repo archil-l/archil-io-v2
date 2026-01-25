@@ -8,8 +8,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { MenuIcon, Trash2Icon, UserIcon, MailIcon } from "lucide-react";
+import {
+  MenuIcon,
+  Trash2Icon,
+  UserIcon,
+  MailIcon,
+  MoonIcon,
+  SunIcon,
+} from "lucide-react";
 import { useState } from "react";
+import { useThemeContext } from "~/contexts/theme-context";
 
 export type FloatingMenuProps = {
   onClearConversation?: () => void;
@@ -17,6 +25,7 @@ export type FloatingMenuProps = {
 
 export function FloatingMenu({ onClearConversation }: FloatingMenuProps) {
   const [open, setOpen] = useState(false);
+  const { theme, toggleTheme } = useThemeContext();
 
   const handleClearConversation = () => {
     onClearConversation?.();
@@ -40,6 +49,18 @@ export function FloatingMenu({ onClearConversation }: FloatingMenuProps) {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <nav className="mt-6 flex flex-col gap-2">
+          <Button
+            variant="ghost"
+            className="justify-start gap-3"
+            onClick={toggleTheme}
+          >
+            {theme === "dark" ? (
+              <SunIcon className="size-4" />
+            ) : (
+              <MoonIcon className="size-4" />
+            )}
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </Button>
           <Button
             variant="ghost"
             className="justify-start gap-3"

@@ -1,7 +1,7 @@
 {
-  "name": "assistant-driven-homepage",
+  "name": "homepage-agent",
   "version": "1.0.0",
-  "description": "Homepage with an AI assistant UI with React Router v7 and AWS CDK deployment",
+  "description": "Homepage with an AI assistant, to interact with visitors",
   "author": "Archil Lelashvili <mail@archil.io>",
   "license": "GPL-3.0",
   "private": true,
