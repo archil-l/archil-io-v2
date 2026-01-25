@@ -5,9 +5,10 @@ import { PromptInputSubmit } from "~/components/ai-elements/prompt-input";
 
 interface InputAreaProps {
   onSubmit: (message: { text?: string }) => void;
+  isLoading?: boolean;
 }
 
-export function InputArea({ onSubmit }: InputAreaProps) {
+export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
   const [input, setInput] = useState("");
 
   const handleSubmit = (message: { text?: string }) => {
@@ -27,7 +28,7 @@ export function InputArea({ onSubmit }: InputAreaProps) {
         className="pr-12"
       />
       <PromptInputSubmit
-        disabled={!input.trim()}
+        disabled={!input.trim() || isLoading}
         className="absolute bottom-1 right-1"
       />
     </PromptInput>

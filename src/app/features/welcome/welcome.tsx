@@ -10,12 +10,12 @@ import { InputArea } from "./components/input-area";
 import { SuggestionBar } from "./components/suggestion-bar";
 
 export default function Welcome() {
-  const { messages, setMessages, isLoaded } = useWelcomeSession();
-  const { handleSubmit, handleClearConversation } = useConversation({
-    messages,
-    setMessages,
-    isLoaded,
-  });
+  const { messages: initialMessages, isLoaded } = useWelcomeSession();
+  const { messages, isLoading, handleSubmit, handleClearConversation } =
+    useConversation({
+      initialMessages,
+      isLoaded,
+    });
 
   const handleSuggestionClick = (suggestion: string) => {
     handleSubmit({ text: suggestion });
@@ -34,11 +34,11 @@ export default function Welcome() {
       {/* Main Content */}
       <div className="mx-auto flex h-full max-w-3xl flex-col p-4 pt-16">
         {/* Conversation Area */}
-        <ConversationArea messages={messages} />
+        <ConversationArea messages={messages} isLoading={isLoading} />
 
         {/* Input and Suggestions */}
         <div className="mt-2 mb-4 space-y-3">
-          <InputArea onSubmit={handleSubmit} />
+          <InputArea onSubmit={handleSubmit} isLoading={isLoading} />
           <SuggestionBar
             suggestions={PREDEFINED_PROMPTS}
             onSuggestionClick={handleSuggestionClick}

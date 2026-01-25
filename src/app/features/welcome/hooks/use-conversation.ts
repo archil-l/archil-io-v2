@@ -1,22 +1,66 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import {
   saveConversationHistory,
   clearConversation,
   type MessageType,
 } from "~/lib/session";
+import { useAgentChat } from "~/features/agent";
 import { INITIAL_WELCOME_MESSAGE } from "../constants";
+import type { UIMessage } from "ai";
 
 interface UseConversationProps {
-  messages: MessageType[];
-  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
+  initialMessages?: MessageType[];
   isLoaded: boolean;
 }
 
+// Convert our MessageType to AI SDK UIMessage format
+function toAIMessage(msg: MessageType): UIMessage {
+  return {
+    id: msg.id,
+    role: msg.role,
+    parts: [{ type: "text", text: msg.content }],
+  };
+}
+
+// Convert AI SDK UIMessage to our MessageType format
+function toMessageType(msg: UIMessage): MessageType {
+  // Extract text from parts
+  const textParts = msg.parts.filter(
+    (p): p is { type: "text"; text: string } => p.type === "text"
+  );
+  const textContent = textParts.map((p) => p.text).join("");
+
+  return {
+    id: msg.id,
+    role: msg.role as "user" | "assistant",
+    content: textContent,
+    parts: [{ type: "text", text: textContent }],
+  };
+}
+
 export function useConversation({
-  messages,
-  setMessages,
+  initialMessages = [],
   isLoaded,
 }: UseConversationProps) {
+  // Convert initial messages to AI SDK format
+  const aiInitialMessages =
+    initialMessages.length > 0
+      ? initialMessages.map(toAIMessage)
+      : [toAIMessage(INITIAL_WELCOME_MESSAGE)];
+
+  const {
+    messages: aiMessages,
+    sendMessage,
+    setMessages: setAIMessages,
+    isLoading,
+    error,
+  } = useAgentChat({
+    initialMessages: aiInitialMessages,
+  });
+
+  // Convert AI messages to our format for display
+  const messages: MessageType[] = aiMessages.map(toMessageType);
+
   // Save conversation to localStorage whenever messages change (after initial load)
   useEffect(() => {
     if (isLoaded && messages.length > 0) {
@@ -24,40 +68,23 @@ export function useConversation({
     }
   }, [messages, isLoaded]);
 
-  const handleSubmit = (message: { text?: string }) => {
-    if (!message.text?.trim()) return;
+  const handleSubmit = useCallback(
+    (message: { text?: string }) => {
+      if (!message.text?.trim()) return;
+      sendMessage({ text: message.text });
+    },
+    [sendMessage]
+  );
 
-    // Add user message
-    const userMessage: MessageType = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: message.text,
-      parts: [{ type: "text", text: message.text }],
-    };
-
-    // Add mock AI response
-    const aiResponse: MessageType = {
-      id: `ai-${Date.now()}`,
-      role: "assistant",
-      content:
-        "Thanks for your message! This is a mock response. The AI integration will be added later.",
-      parts: [
-        {
-          type: "text",
-          text: "Thanks for your message! This is a mock response. The AI integration will be added later.",
-        },
-      ],
-    };
-
-    setMessages((prev) => [...prev, userMessage, aiResponse]);
-  };
-
-  const handleClearConversation = () => {
+  const handleClearConversation = useCallback(() => {
     clearConversation();
-    setMessages([INITIAL_WELCOME_MESSAGE]);
-  };
+    setAIMessages([toAIMessage(INITIAL_WELCOME_MESSAGE)]);
+  }, [setAIMessages]);
 
   return {
+    messages,
+    isLoading,
+    error,
     handleSubmit,
     handleClearConversation,
   };

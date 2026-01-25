@@ -8,9 +8,10 @@ import { type MessageType } from "~/lib/session";
 
 interface ConversationAreaProps {
   messages: MessageType[];
+  isLoading?: boolean;
 }
 
-export function ConversationArea({ messages }: ConversationAreaProps) {
+export function ConversationArea({ messages, isLoading }: ConversationAreaProps) {
   return (
     <Conversation className="flex-1 h-full">
       <ConversationContent>

@@ -23,6 +23,9 @@ const app = express();
 
 app.use(compression());
 
+// Parse JSON for API routes
+app.use(express.json());
+
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable("x-powered-by");
 
@@ -62,6 +65,14 @@ if (viteDevServer) {
 }
 
 app.use(morgan("tiny"));
+
+// API routes - must come before SSR handler
+app.post("/api/agent", async (req, res) => {
+  const { handleAgentRequest } = await import(
+    "../src/app/server/agent/index.js"
+  );
+  return handleAgentRequest(req, res);
+});
 
 // handle SSR requests
 app.use(routerHandler);
