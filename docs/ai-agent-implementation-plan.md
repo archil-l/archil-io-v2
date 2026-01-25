@@ -5,37 +5,41 @@ Replace mock responses in the welcome feature with a real AI agent using AI SDK 
 
 **Choices made:**
 - Provider: Anthropic (Claude)
-- Knowledge base: TypeScript types/structure only (no placeholder content)
+- Knowledge base: Markdown files (`.md`) read by server tools
 - Client tools: setTheme + copyToClipboard only
 
 ## File Structure
 
 ```
-src/app/features/agent/
-├── index.ts                     # Re-exports
-├── config/
-│   ├── index.ts
-│   ├── agent-config.ts          # Model settings
-│   └── system-prompt.ts         # System prompt builder
-├── tools/
-│   ├── index.ts
-│   ├── server/
+src/app/
+├── server/                      # All server-side code
+│   └── agent/                   # Agent service
+│       ├── index.ts             # Route handler export
+│       ├── chat-handler.ts      # Main chat API handler
+│       ├── system-prompt.ts     # System prompt builder
+│       └── tools/               # Server-side tools
+│           ├── index.ts
+│           ├── get-contact-info.ts
+│           ├── get-experience.ts
+│           └── get-technologies.ts
+│
+├── features/agent/
+│   ├── index.ts                 # Re-exports
+│   ├── config/
 │   │   ├── index.ts
-│   │   ├── get-contact-info.ts
-│   │   ├── get-experience.ts
-│   │   └── get-technologies.ts
-│   └── client/
-│       ├── index.ts
-│       ├── set-theme.ts         # Toggle light/dark mode
-│       └── copy-to-clipboard.ts # Copy text to clipboard
-├── knowledge/
-│   ├── index.ts
-│   ├── about.ts                 # Bio, background
-│   ├── experience.ts            # Work history
-│   ├── technologies.ts          # Skills & tech stack
-│   └── contact.ts               # Contact info
-└── hooks/
-    └── use-agent-chat.ts        # Custom useChat wrapper
+│   │   └── agent-config.ts      # Model settings (shared)
+│   ├── tools/
+│   │   └── client/              # Client-side tools only
+│   │       ├── index.ts
+│   │       ├── set-theme.ts
+│   │       └── copy-to-clipboard.ts
+│   ├── knowledge/               # Markdown files (not .ts!)
+│   │   ├── about.md
+│   │   ├── experience.md
+│   │   ├── technologies.md
+│   │   └── contact.md
+│   └── hooks/
+│       └── use-agent-chat.ts    # Custom useChat wrapper
 ```
 
 ## Implementation Steps
@@ -45,17 +49,17 @@ src/app/features/agent/
 npm install @ai-sdk/anthropic
 ```
 
-### 2. Create Knowledge Base Files (TypeScript types only)
-- `src/app/features/agent/knowledge/about.ts` - `AboutInfo` type + empty export
-- `src/app/features/agent/knowledge/experience.ts` - `Experience` type + empty array
-- `src/app/features/agent/knowledge/technologies.ts` - `Technology` type + empty array
-- `src/app/features/agent/knowledge/contact.ts` - `ContactInfo` type + empty export
+### 2. Create Knowledge Base Files (Markdown)
+- `src/app/features/agent/knowledge/about.md` - Bio, background info
+- `src/app/features/agent/knowledge/experience.md` - Work history
+- `src/app/features/agent/knowledge/technologies.md` - Skills & tech stack
+- `src/app/features/agent/knowledge/contact.md` - Contact details
 
-You will fill in the actual content later.
+These are plain markdown files. Server tools read them via a utility function.
 
 ### 3. Create Agent Configuration
-- `src/app/features/agent/config/agent-config.ts` - Model name, temperature, maxSteps
-- `src/app/features/agent/config/system-prompt.ts` - Build dynamic system prompt from knowledge
+- `src/app/features/agent/config/agent-config.ts` - Model name, temperature, maxSteps (shared config)
+- `src/app/server/agent/system-prompt.ts` - Build dynamic system prompt (server-side)
 
 ### 4. Create Server-Side Tools
 Tools with `execute` functions that run on the server:
@@ -78,18 +82,22 @@ Tools executed via `onToolCall` in the browser:
 **set-theme.ts** - Toggle/set light/dark mode (uses existing `useThemeContext`)
 **copy-to-clipboard.ts** - Copy text (e.g., email) to clipboard
 
-### 6. Add API Route to Express Server
-Modify `deployment/server.js`:
-- Add `express.json()` middleware
-- Add `/api/chat` POST route before React Router handler
-- Import and use chat handler
+### 6. Create Server Chat Service & Update Routes
+Create `src/app/server/agent/` with the chat handler:
 
-**New file: `src/api/chat.ts`**
+**`src/app/server/agent/chat-handler.ts`**
 ```typescript
 import { streamText, convertToModelMessages } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import type { Request, Response } from "express";
+import { serverTools } from "./tools";
+import { buildSystemPrompt } from "./system-prompt";
 
-export async function handleChatRequest(req, res) {
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function handleChatRequest(req: Request, res: Response) {
   const { messages } = req.body;
   const result = streamText({
     model: anthropic("claude-sonnet-4-20250514"),
@@ -101,10 +109,14 @@ export async function handleChatRequest(req, res) {
 }
 ```
 
+**Modify `deployment/server.js`:**
+- Add `express.json()` middleware
+- Add `/api/agent` POST route that imports from `src/app/server/agent`
+
 ### 7. Create useAgentChat Hook
 `src/app/features/agent/hooks/use-agent-chat.ts`:
 - Wrap AI SDK's `useChat` hook
-- Configure transport to `/api/chat`
+- Configure transport to `/api/agent`
 - Handle client-side tools via `onToolCall`:
   - `setTheme`: Use `useThemeContext` to toggle theme
   - `copyToClipboard`: Use `navigator.clipboard.writeText()`
@@ -125,19 +137,33 @@ Replace mock implementation:
 
 | File | Changes |
 |------|---------|
-| `deployment/server.js` | Add JSON middleware, `/api/chat` route |
+| `deployment/server.js` | Add JSON middleware, forward `/api/*` to handlers |
 | `src/app/features/welcome/hooks/use-conversation.ts` | Replace mock with `useAgentChat` |
 | `package.json` | Add `@ai-sdk/anthropic` |
 
 ## New Files to Create
 
-1. `src/api/chat.ts` - Express route handler
-2. `src/app/features/agent/knowledge/*.ts` - Knowledge base (4 files)
-3. `src/app/features/agent/config/*.ts` - Configuration (2 files)
-4. `src/app/features/agent/tools/server/*.ts` - Server tools (3 files)
-5. `src/app/features/agent/tools/client/*.ts` - Client tools (2 files)
-6. `src/app/features/agent/hooks/use-agent-chat.ts` - Custom hook
-7. `src/app/features/agent/index.ts` - Re-exports
+**Server-side (`src/app/server/agent/`):**
+1. `chat-handler.ts` - Main API handler
+2. `system-prompt.ts` - System prompt builder
+3. `tools/index.ts` - Server tools export
+4. `tools/get-contact-info.ts`
+5. `tools/get-experience.ts`
+6. `tools/get-technologies.ts`
+7. `tools/read-knowledge.ts` - Utility to read .md files
+
+**Client-side (`src/app/features/agent/`):**
+1. `config/agent-config.ts` - Shared config
+2. `tools/client/set-theme.ts`
+3. `tools/client/copy-to-clipboard.ts`
+4. `hooks/use-agent-chat.ts` - Custom hook
+5. `index.ts` - Re-exports
+
+**Knowledge base (`src/app/features/agent/knowledge/`):**
+1. `about.md`
+2. `experience.md`
+3. `technologies.md`
+4. `contact.md`
 
 ## Server-Side Tools Summary
 
@@ -156,7 +182,7 @@ Replace mock implementation:
 
 ## Verification
 
-1. **API endpoint**: `curl -X POST http://localhost:5173/api/chat` returns streaming response
+1. **API endpoint**: `curl -X POST http://localhost:5173/api/agent` returns streaming response
 2. **Server tools**: Ask "What technologies do you use?" - should call `getTechnologies`
 3. **Client tools**:
    - Ask "switch to dark mode" - should toggle theme
