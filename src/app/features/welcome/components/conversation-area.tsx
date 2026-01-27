@@ -3,20 +3,16 @@ import { ConversationContent } from "~/components/ai-elements/conversation";
 import { Message } from "~/components/ai-elements/message";
 import { MessageContent } from "~/components/ai-elements/message";
 import { MessageResponse } from "~/components/ai-elements/message";
-import { type MessageType } from "~/lib/session";
 import { cn } from "~/lib/utils";
+import { useConversationContext } from "~/contexts/conversation-context";
 
 interface ConversationAreaProps {
   className: string;
-  messages: MessageType[];
-  isLoading?: boolean;
 }
 
-export function ConversationArea({
-  className,
-  messages,
-  isLoading,
-}: ConversationAreaProps) {
+export function ConversationArea({ className }: ConversationAreaProps) {
+  const { messages, isLoading } = useConversationContext();
+
   return (
     <Conversation className={cn("flex-1 h-auto", className)}>
       <ConversationContent>

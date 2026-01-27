@@ -132,12 +132,6 @@
       color 300ms ease-in-out;
   }
 
-  * {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: ease-in-out;
-    transition-duration: 300ms;
-  }
-
   /* Apply dark mode variables by default using media query */
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {

@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PromptInput } from "~/components/ai-elements/prompt-input";
 import { PromptInputTextarea } from "~/components/ai-elements/prompt-input";
 import { PromptInputSubmit } from "~/components/ai-elements/prompt-input";
+import { useConversationContext } from "~/contexts/conversation-context";
 
-interface InputAreaProps {
-  onSubmit: (message: { text?: string }) => void;
-  isLoading?: boolean;
-}
-
-export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
+export function InputArea() {
+  const { handleSubmit: onSubmit, isLoading } = useConversationContext();
   const [input, setInput] = useState("");
+
+  // Listen for suggestion clicks
+  useEffect(() => {
+    const handleSuggestionClick = (event: CustomEvent<string>) => {
+      const suggestion = event.detail;
+      onSubmit({ text: suggestion });
+    };
+
+    window.addEventListener(
+      "suggestion-click",
+      handleSuggestionClick as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        "suggestion-click",
+        handleSuggestionClick as EventListener,
+      );
+    };
+  }, [onSubmit]);
 
   const handleSubmit = (message: { text?: string }) => {
     onSubmit(message);
