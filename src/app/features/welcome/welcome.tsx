@@ -8,6 +8,9 @@ import { WelcomeHeader } from "./components/welcome-header";
 import { ConversationArea } from "./components/conversation-area";
 import { InputArea } from "./components/input-area";
 import { SuggestionBar } from "./components/suggestion-bar";
+import { StickToBottom } from "use-stick-to-bottom";
+import { ConversationScrollButton } from "~/components/ai-elements/conversation";
+import { Fragment } from "react/jsx-runtime";
 
 export default function Welcome() {
   const { messages: initialMessages, isLoaded } = useWelcomeSession();
@@ -27,24 +30,28 @@ export default function Welcome() {
   }
 
   return (
-    <div className="relative h-screen w-full">
-      {/* Floating Menu Button */}
-      <FloatingMenu onClearConversation={handleClearConversation} />
+    <div className="relative h-full w-full">
+      <StickToBottom>
+        {/* Floating Menu Button */}
+        <FloatingMenu onClearConversation={handleClearConversation} />
 
-      {/* Main Content */}
-      <div className="mx-auto flex h-full max-w-3xl flex-col p-4 pt-16">
-        {/* Conversation Area */}
-        <ConversationArea messages={messages} isLoading={isLoading} />
+        {/* Main Content */}
+        <ConversationArea
+          className="mt-4 w-full max-w-2xl mx-auto relative"
+          messages={messages}
+          isLoading={isLoading}
+        />
 
         {/* Input and Suggestions */}
-        <div className="mt-2 mb-4 space-y-3">
+        <div className="fixed w-full bottom-0 pb-4 z-50 justify-items-center bg-(--background)">
           <InputArea onSubmit={handleSubmit} isLoading={isLoading} />
           <SuggestionBar
             suggestions={PREDEFINED_PROMPTS}
             onSuggestionClick={handleSuggestionClick}
           />
         </div>
-      </div>
+        <ConversationScrollButton className="fixed mb-36" />
+      </StickToBottom>
     </div>
   );
 }

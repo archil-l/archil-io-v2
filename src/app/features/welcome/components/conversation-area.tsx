@@ -1,19 +1,24 @@
 import { Conversation } from "~/components/ai-elements/conversation";
 import { ConversationContent } from "~/components/ai-elements/conversation";
-import { ConversationScrollButton } from "~/components/ai-elements/conversation";
 import { Message } from "~/components/ai-elements/message";
 import { MessageContent } from "~/components/ai-elements/message";
 import { MessageResponse } from "~/components/ai-elements/message";
 import { type MessageType } from "~/lib/session";
+import { cn } from "~/lib/utils";
 
 interface ConversationAreaProps {
+  className: string;
   messages: MessageType[];
   isLoading?: boolean;
 }
 
-export function ConversationArea({ messages, isLoading }: ConversationAreaProps) {
+export function ConversationArea({
+  className,
+  messages,
+  isLoading,
+}: ConversationAreaProps) {
   return (
-    <Conversation className="flex-1 h-full">
+    <Conversation className={cn("flex-1 h-auto", className)}>
       <ConversationContent>
         {messages.map((message) => (
           <div key={message.id}>
@@ -31,8 +36,8 @@ export function ConversationArea({ messages, isLoading }: ConversationAreaProps)
             })}
           </div>
         ))}
+        <div className="h-[120px]"></div>
       </ConversationContent>
-      <ConversationScrollButton />
     </Conversation>
   );
 }
