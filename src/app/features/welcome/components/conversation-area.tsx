@@ -6,13 +6,15 @@ import { MessageContent } from "~/components/ai-elements/message";
 import { MessageResponse } from "~/components/ai-elements/message";
 import { cn } from "~/lib/utils";
 import { useConversationContext } from "~/contexts/conversation-context";
+import { useAutoScroll } from "../hooks/use-auto-scroll";
 
 interface ConversationAreaProps {
   className: string;
 }
 
 export function ConversationArea({ className }: ConversationAreaProps) {
-  const { messages } = useConversationContext();
+  const { messages, isLoading } = useConversationContext();
+  const { scrollAnchorRef } = useAutoScroll({ messages, isLoading });
 
   return (
     <Conversation className={cn("flex-1 h-auto", className)}>
@@ -33,7 +35,7 @@ export function ConversationArea({ className }: ConversationAreaProps) {
             })}
           </div>
         ))}
-        <div className="h-[100px]"></div>
+        <div ref={scrollAnchorRef} className="h-[100px]"></div>
       </ConversationContent>
     </Conversation>
   );
