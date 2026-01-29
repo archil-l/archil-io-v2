@@ -128,8 +128,8 @@
 
   html {
     transition:
-      background-color 300ms ease-in-out,
-      color 300ms ease-in-out;
+      background-color 600ms ease-in-out,
+      color 600ms ease-in-out;
   }
 
   /* Apply dark mode variables by default using media query */

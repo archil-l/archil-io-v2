@@ -1,3 +1,4 @@
+"use client";
 import { Conversation } from "~/components/ai-elements/conversation";
 import { ConversationContent } from "~/components/ai-elements/conversation";
 import { Message } from "~/components/ai-elements/message";
@@ -11,7 +12,7 @@ interface ConversationAreaProps {
 }
 
 export function ConversationArea({ className }: ConversationAreaProps) {
-  const { messages, isLoading } = useConversationContext();
+  const { messages } = useConversationContext();
 
   return (
     <Conversation className={cn("flex-1 h-auto", className)}>
@@ -32,7 +33,7 @@ export function ConversationArea({ className }: ConversationAreaProps) {
             })}
           </div>
         ))}
-        <div className="h-[120px]"></div>
+        <div className="h-[100px]"></div>
       </ConversationContent>
     </Conversation>
   );
