@@ -34,6 +34,9 @@ function WelcomeContent() {
     isLoading,
   });
 
+  // Hide suggestions after the first user message (messages.length > 1)
+  const showSuggestions = messages.length <= 1;
+
   return (
     <div className="relative h-full w-full">
       {/* Header with icon buttons */}
@@ -41,6 +44,20 @@ function WelcomeContent() {
 
       {/* Main Content */}
       <ConversationArea className="mt-[100px] w-full max-w-3xl mx-auto relative" />
+
+      <div className="fixed w-full left-[50%] translate-x-[-50%] bottom-[100px] p-4 z-50 justify-items-center">
+        <SuggestionBar
+          suggestions={PREDEFINED_PROMPTS}
+          onSuggestionClick={(suggestion) => {
+            // InputArea will handle this via context
+            const event = new CustomEvent("suggestion-click", {
+              detail: suggestion,
+            });
+            window.dispatchEvent(event);
+          }}
+          isVisible={showSuggestions}
+        />
+      </div>
 
       {/* Scroll to Bottom Button */}
       <ScrollToBottomButton
@@ -52,16 +69,6 @@ function WelcomeContent() {
       {/* Input and Suggestions */}
       <div className="fixed w-full bottom-0 p-4 z-50 justify-items-center bg-(--background)">
         <InputArea />
-        <SuggestionBar
-          suggestions={PREDEFINED_PROMPTS}
-          onSuggestionClick={(suggestion) => {
-            // InputArea will handle this via context
-            const event = new CustomEvent("suggestion-click", {
-              detail: suggestion,
-            });
-            window.dispatchEvent(event);
-          }}
-        />
       </div>
     </div>
   );
