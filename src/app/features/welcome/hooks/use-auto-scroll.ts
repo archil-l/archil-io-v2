@@ -53,7 +53,7 @@ export function useAutoScroll({
 
   // Auto-scroll when messages change
   useEffect(() => {
-    if (shouldAutoScrollRef.current && messages.length > 0) {
+    if (shouldAutoScrollRef.current && messages.length > 1) {
       // Small delay to ensure DOM has updated
       requestAnimationFrame(() => {
         scrollToBottom();
