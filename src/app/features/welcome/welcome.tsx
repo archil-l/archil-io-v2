@@ -1,25 +1,19 @@
 "use client";
 
-import { FloatingMenu } from "~/components/floating-menu";
+import { Header } from "~/components/header";
 import { PREDEFINED_PROMPTS } from "./constants";
 import { useWelcomeSession } from "./hooks/use-welcome-session";
-import { useConversation } from "./hooks/use-conversation";
+import { ConversationProvider } from "~/contexts/conversation-context";
 import { WelcomeHeader } from "./components/welcome-header";
 import { ConversationArea } from "./components/conversation-area";
 import { InputArea } from "./components/input-area";
 import { SuggestionBar } from "./components/suggestion-bar";
+import { ScrollToBottomButton } from "./components/scroll-to-bottom-button";
+import { useAutoScroll } from "./hooks/use-auto-scroll";
+import { useConversationContext } from "~/contexts/conversation-context";
 
 export default function Welcome() {
-  const { messages, setMessages, isLoaded } = useWelcomeSession();
-  const { handleSubmit, handleClearConversation } = useConversation({
-    messages,
-    setMessages,
-    isLoaded,
-  });
-
-  const handleSuggestionClick = (suggestion: string) => {
-    handleSubmit({ text: suggestion });
-  };
+  const { messages: initialMessages, isLoaded } = useWelcomeSession();
 
   // Show loading state until client-side hydration is complete
   if (!isLoaded) {
@@ -27,23 +21,54 @@ export default function Welcome() {
   }
 
   return (
-    <div className="relative h-screen w-full">
-      {/* Floating Menu Button */}
-      <FloatingMenu onClearConversation={handleClearConversation} />
+    <ConversationProvider initialMessages={initialMessages} isLoaded={isLoaded}>
+      <WelcomeContent />
+    </ConversationProvider>
+  );
+}
+
+function WelcomeContent() {
+  const { messages, isLoading } = useConversationContext();
+  const { showScrollButton, scrollToBottom } = useAutoScroll({
+    messages,
+    isLoading,
+  });
+
+  // Hide suggestions after the first user message (messages.length > 1)
+  const showSuggestions = messages.length <= 1;
+
+  return (
+    <div className="relative h-full w-full">
+      {/* Header with icon buttons */}
+      <Header />
 
       {/* Main Content */}
-      <div className="mx-auto flex h-full max-w-3xl flex-col p-4 pt-16">
-        {/* Conversation Area */}
-        <ConversationArea messages={messages} />
+      <ConversationArea className="mt-[100px] w-full max-w-3xl mx-auto relative" />
 
-        {/* Input and Suggestions */}
-        <div className="mt-2 mb-4 space-y-3">
-          <InputArea onSubmit={handleSubmit} />
-          <SuggestionBar
-            suggestions={PREDEFINED_PROMPTS}
-            onSuggestionClick={handleSuggestionClick}
-          />
-        </div>
+      <div className="fixed w-full left-[50%] translate-x-[-50%] bottom-[100px] p-4 z-50 justify-items-center">
+        <SuggestionBar
+          suggestions={PREDEFINED_PROMPTS}
+          onSuggestionClick={(suggestion) => {
+            // InputArea will handle this via context
+            const event = new CustomEvent("suggestion-click", {
+              detail: suggestion,
+            });
+            window.dispatchEvent(event);
+          }}
+          isVisible={showSuggestions}
+        />
+      </div>
+
+      {/* Scroll to Bottom Button */}
+      <ScrollToBottomButton
+        onClick={scrollToBottom}
+        show={showScrollButton}
+        className="bottom-[170px]"
+      />
+
+      {/* Input and Suggestions */}
+      <div className="fixed w-full bottom-0 p-4 z-50 justify-items-center bg-(--background)">
+        <InputArea />
       </div>
     </div>
   );

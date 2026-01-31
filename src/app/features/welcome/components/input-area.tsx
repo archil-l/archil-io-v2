@@ -1,14 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PromptInput } from "~/components/ai-elements/prompt-input";
 import { PromptInputTextarea } from "~/components/ai-elements/prompt-input";
 import { PromptInputSubmit } from "~/components/ai-elements/prompt-input";
+import { useConversationContext } from "~/contexts/conversation-context";
 
-interface InputAreaProps {
-  onSubmit: (message: { text?: string }) => void;
-}
-
-export function InputArea({ onSubmit }: InputAreaProps) {
+export function InputArea() {
+  const { handleSubmit: onSubmit, isLoading } = useConversationContext();
   const [input, setInput] = useState("");
+
+  // Listen for suggestion clicks
+  useEffect(() => {
+    const handleSuggestionClick = (event: CustomEvent<string>) => {
+      const suggestion = event.detail;
+      onSubmit({ text: suggestion });
+    };
+
+    window.addEventListener(
+      "suggestion-click",
+      handleSuggestionClick as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        "suggestion-click",
+        handleSuggestionClick as EventListener,
+      );
+    };
+  }, [onSubmit]);
 
   const handleSubmit = (message: { text?: string }) => {
     onSubmit(message);
@@ -18,7 +35,7 @@ export function InputArea({ onSubmit }: InputAreaProps) {
   return (
     <PromptInput
       onSubmit={handleSubmit}
-      className="mt-4 w-full max-w-2xl mx-auto relative"
+      className="w-full max-w-2xl mx-auto relative"
     >
       <PromptInputTextarea
         value={input}
@@ -27,7 +44,7 @@ export function InputArea({ onSubmit }: InputAreaProps) {
         className="pr-12"
       />
       <PromptInputSubmit
-        disabled={!input.trim()}
+        disabled={!input.trim() || isLoading}
         className="absolute bottom-1 right-1"
       />
     </PromptInput>

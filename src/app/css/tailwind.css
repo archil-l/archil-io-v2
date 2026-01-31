@@ -80,6 +80,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: light;
 }
 
 .dark {
@@ -114,6 +115,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -126,14 +128,8 @@
 
   html {
     transition:
-      background-color 300ms ease-in-out,
-      color 300ms ease-in-out;
-  }
-
-  * {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: ease-in-out;
-    transition-duration: 300ms;
+      background-color 600ms ease-in-out,
+      color 600ms ease-in-out;
   }
 
   /* Apply dark mode variables by default using media query */

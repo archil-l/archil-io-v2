@@ -16,6 +16,8 @@
     "cdk:build": "tsc -p cdk/tsconfig.json"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.23",
+    "@ai-sdk/react": "^3.0.51",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",

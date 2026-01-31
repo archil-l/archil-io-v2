@@ -1,17 +1,24 @@
-import { useEffect, useCallback } from "react";
+import { createContext, useContext, useEffect, useCallback } from "react";
 import {
   saveConversationHistory,
   clearConversation,
   type MessageType,
 } from "~/lib/session";
 import { useAgentChat } from "~/features/agent";
-import { INITIAL_WELCOME_MESSAGE } from "../constants";
+import { INITIAL_WELCOME_MESSAGE } from "~/features/welcome/constants";
 import type { UIMessage } from "ai";
 
-interface UseConversationProps {
-  initialMessages?: MessageType[];
-  isLoaded: boolean;
+interface ConversationContextType {
+  messages: MessageType[];
+  isLoading: boolean;
+  error: Error | undefined;
+  handleSubmit: (message: { text?: string }) => void;
+  handleClearConversation: () => void;
 }
+
+const ConversationContext = createContext<ConversationContextType | undefined>(
+  undefined,
+);
 
 // Convert our MessageType to AI SDK UIMessage format
 function toAIMessage(msg: MessageType): UIMessage {
@@ -26,7 +33,7 @@ function toAIMessage(msg: MessageType): UIMessage {
 function toMessageType(msg: UIMessage): MessageType {
   // Extract text from parts
   const textParts = msg.parts.filter(
-    (p): p is { type: "text"; text: string } => p.type === "text"
+    (p): p is { type: "text"; text: string } => p.type === "text",
   );
   const textContent = textParts.map((p) => p.text).join("");
 
@@ -38,10 +45,17 @@ function toMessageType(msg: UIMessage): MessageType {
   };
 }
 
-export function useConversation({
+interface ConversationProviderProps {
+  children: React.ReactNode;
+  initialMessages?: MessageType[];
+  isLoaded: boolean;
+}
+
+export function ConversationProvider({
+  children,
   initialMessages = [],
   isLoaded,
-}: UseConversationProps) {
+}: ConversationProviderProps) {
   // Convert initial messages to AI SDK format
   const aiInitialMessages =
     initialMessages.length > 0
@@ -73,7 +87,7 @@ export function useConversation({
       if (!message.text?.trim()) return;
       sendMessage({ text: message.text });
     },
-    [sendMessage]
+    [sendMessage],
   );
 
   const handleClearConversation = useCallback(() => {
@@ -81,11 +95,29 @@ export function useConversation({
     setAIMessages([toAIMessage(INITIAL_WELCOME_MESSAGE)]);
   }, [setAIMessages]);
 
-  return {
-    messages,
-    isLoading,
-    error,
-    handleSubmit,
-    handleClearConversation,
-  };
+  return (
+    <ConversationContext.Provider
+      value={{
+        messages,
+        isLoading,
+        error,
+        handleSubmit,
+        handleClearConversation,
+      }}
+    >
+      {children}
+    </ConversationContext.Provider>
+  );
+}
+
+export function useConversationContext() {
+  const context = useContext(ConversationContext);
+
+  if (context === undefined) {
+    throw new Error(
+      "useConversationContext must be used within a ConversationProvider",
+    );
+  }
+
+  return context;
 }

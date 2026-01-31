@@ -1,18 +1,23 @@
+"use client";
 import { Conversation } from "~/components/ai-elements/conversation";
 import { ConversationContent } from "~/components/ai-elements/conversation";
-import { ConversationScrollButton } from "~/components/ai-elements/conversation";
 import { Message } from "~/components/ai-elements/message";
 import { MessageContent } from "~/components/ai-elements/message";
 import { MessageResponse } from "~/components/ai-elements/message";
-import { type MessageType } from "~/lib/session";
+import { cn } from "~/lib/utils";
+import { useConversationContext } from "~/contexts/conversation-context";
+import { useAutoScroll } from "../hooks/use-auto-scroll";
 
 interface ConversationAreaProps {
-  messages: MessageType[];
+  className: string;
 }
 
-export function ConversationArea({ messages }: ConversationAreaProps) {
+export function ConversationArea({ className }: ConversationAreaProps) {
+  const { messages, isLoading } = useConversationContext();
+  const { scrollAnchorRef } = useAutoScroll({ messages, isLoading });
+
   return (
-    <Conversation className="flex-1 h-full">
+    <Conversation className={cn("flex-1 h-auto", className)}>
       <ConversationContent>
         {messages.map((message) => (
           <div key={message.id}>
@@ -30,8 +35,8 @@ export function ConversationArea({ messages }: ConversationAreaProps) {
             })}
           </div>
         ))}
+        <div ref={scrollAnchorRef} className="h-[100px]"></div>
       </ConversationContent>
-      <ConversationScrollButton />
     </Conversation>
   );
 }
