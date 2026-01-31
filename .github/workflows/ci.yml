@@ -1,0 +1,75 @@
+name: CI - Lint, Type Check, Build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Run TypeScript type checking
+        run: npx tsc --noEmit
+
+      - name: Run CDK type checking
+        run: npm run cdk:build
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build release bundle
+        run: npm run release
+
+      - name: Verify bundle
+        run: |
+          if [ -f "dist/lambda-pkg/server/index.js" ]; then
+            echo "✓ Lambda bundle created successfully"
+          else
+            echo "✗ Lambda bundle not found"
+            exit 1
+          fi
+
+  summary:
+    name: CI Status
+    needs: ci
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          if [ "${{ needs.ci.result }}" == "success" ]; then
+            echo "✓ All CI checks passed"
+            exit 0
+          else
+            echo "✗ CI checks failed"
+            exit 1
+          fi

@@ -10,12 +10,25 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import { Construct } from "constructs";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import type { EnvironmentConfig } from "../config/environments.js";
+
+interface WebAppStackProps extends cdk.StackProps {
+  environment: string;
+  envConfig: EnvironmentConfig;
+}
 
 export class WebAppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
 
+    const { environment, envConfig } = props;
+
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+    // Environment-specific configuration from envConfig
+    const isDev = environment === "dev";
+    const lambdaMemory = envConfig.lambdaMemory;
+    const logRetentionDays = envConfig.logRetentionDays;
 
     // S3 bucket for static assets
     const assetsBucket = new s3.Bucket(this, "RemixAssetsBucket", {
@@ -23,6 +36,7 @@ export class WebAppStack extends cdk.Stack {
       autoDeleteObjects: true,
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      versioned: true, // Enable versioning for rollback capability
       cors: [
         {
           allowedMethods: [s3.HttpMethods.GET],
@@ -32,7 +46,23 @@ export class WebAppStack extends cdk.Stack {
       ],
     });
 
-    // CloudFront distribution for the S3 bucket
+    // Add lifecycle policy to clean up old versions
+    assetsBucket.addLifecycleRule({
+      noncurrentVersionExpiration: cdk.Duration.days(isDev ? 7 : 30),
+      noncurrentVersionTransitions: !isDev
+        ? [
+            {
+              storageClass: s3.StorageClass.GLACIER,
+              transitionAfter: cdk.Duration.days(90),
+            },
+          ]
+        : undefined,
+    });
+
+    // CloudFront distribution for the S3 bucket with environment-specific caching
+    const htmlCacheTtl = cdk.Duration.minutes(envConfig.htmlCacheTtlMinutes);
+    const assetCacheTtl = cdk.Duration.days(envConfig.assetsCacheTtlDays);
+
     const distribution = new cloudfront.Distribution(
       this,
       "RemixAssetsDistribution",
@@ -41,7 +71,34 @@ export class WebAppStack extends cdk.Stack {
           origin: origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+          cachePolicy: new cloudfront.CachePolicy(this, "HtmlCachePolicy", {
+            defaultTtl: htmlCacheTtl,
+            maxTtl: htmlCacheTtl,
+            minTtl: cdk.Duration.seconds(0),
+            queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
+            headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+            cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+            enableAcceptEncodingGzip: true,
+            enableAcceptEncodingBrotli: true,
+          }),
+        },
+        additionalBehaviors: {
+          "/assets/*": {
+            origin:
+              origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
+            viewerProtocolPolicy:
+              cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            cachePolicy: new cloudfront.CachePolicy(this, "AssetsCachePolicy", {
+              defaultTtl: assetCacheTtl,
+              maxTtl: assetCacheTtl,
+              minTtl: cdk.Duration.seconds(0),
+              queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
+              headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+              cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+              enableAcceptEncodingGzip: true,
+              enableAcceptEncodingBrotli: true,
+            }),
+          },
         },
         defaultRootObject: undefined,
         errorResponses: [
@@ -52,7 +109,7 @@ export class WebAppStack extends cdk.Stack {
             ttl: cdk.Duration.minutes(5),
           },
         ],
-      }
+      },
     );
 
     // Lambda function using NodejsFunction for automatic bundling
@@ -60,18 +117,20 @@ export class WebAppStack extends cdk.Stack {
       entry: path.join(__dirname, "../../../deployment/server.js"),
       handler: "handler",
       runtime: Runtime.NODEJS_24_X,
-      memorySize: 1024,
+      memorySize: lambdaMemory,
       timeout: cdk.Duration.seconds(30),
       architecture: Architecture.X86_64,
       environment: {
         ASSETS_BUCKET: assetsBucket.bucketName,
         CLOUDFRONT_URL: `https://${distribution.distributionDomainName}`,
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
       },
       bundling: {
         minify: true,
         sourceMap: false,
         externalModules: ["aws-sdk"],
       },
+      logRetention: logRetentionDays,
     });
 
     // Grant Lambda function read access to S3 bucket
@@ -99,7 +158,7 @@ export class WebAppStack extends cdk.Stack {
     // Lambda integration
     const lambdaIntegration = new integrations.HttpLambdaIntegration(
       "RemixIntegration",
-      remixFunction
+      remixFunction,
     );
 
     // Add route for all paths
