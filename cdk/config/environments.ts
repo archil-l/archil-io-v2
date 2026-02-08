@@ -9,7 +9,6 @@
  */
 
 export enum Stage {
-  dev = "dev",
   prod = "prod",
 }
 
@@ -31,18 +30,9 @@ export interface EnvironmentConfig {
 }
 
 const environments: Record<Stage, EnvironmentConfig> = {
-  [Stage.dev]: {
-    stage: Stage.dev,
-    accountId: "754567010779",
-    region: "us-east-1",
-    lambdaMemory: 512,
-    logRetentionDays: 7,
-    htmlCacheTtlMinutes: 5,
-    assetsCacheTtlDays: 1,
-  },
   [Stage.prod]: {
     stage: Stage.prod,
-    accountId: "YOUR_PROD_ACCOUNT_ID",
+    accountId: "260448775808",
     region: "us-east-1",
     lambdaMemory: 1024,
     logRetentionDays: 30,
@@ -53,22 +43,19 @@ const environments: Record<Stage, EnvironmentConfig> = {
 
 /**
  * Get environment configuration by stage
- * @param stage Stage name (dev or prod)
+ * @param stage Stage name (prod)
  * @returns Environment configuration object
  * @throws Error if stage is invalid or not properly configured
  */
 export function getEnvironmentConfig(stage: string): EnvironmentConfig {
-  if (stage !== "dev" && stage !== "prod") {
-    throw new Error(`Invalid stage "${stage}". Must be "dev" or "prod".`);
+  if (stage !== "prod") {
+    throw new Error(`Invalid stage "${stage}". Must be "prod".`);
   }
 
   const config = environments[stage as Stage];
 
-  // Validate that prod account ID is configured
-  if (stage === "prod" && config.accountId === "YOUR_PROD_ACCOUNT_ID") {
-    throw new Error(
-      "Production account ID not configured. Update cdk/config/environments.ts and set the prod accountId to your actual AWS account ID.",
-    );
+  if (!config) {
+    throw new Error(`Production configuration not found for stage: ${stage}`);
   }
 
   return config;

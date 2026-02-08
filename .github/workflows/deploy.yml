@@ -1,0 +1,77 @@
+name: Deploy - Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: github-actions-prod-${{ github.run_id }}
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build release bundle
+        run: npm run release
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Deploy OIDC stack
+        run: npx cdk deploy archil-io-v2-github-oidc-prod --context environment=prod --require-approval never
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy application stack
+        run: npx cdk deploy archil-io-v2-prod --context environment=prod --require-approval never
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Get deployment outputs
+        id: deployment
+        run: |
+          aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs' --output table
+          CLOUDFRONT_URL=$(aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs[?OutputKey==`RemixCloudFrontUrl`].OutputValue' --output text)
+          echo "cloudfront_url=$CLOUDFRONT_URL" >> $GITHUB_OUTPUT
+
+      - name: Post deployment summary
+        if: always()
+        run: |
+          echo "## Deployment Summary (Production)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Region**: ${{ secrets.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**CloudFront URL**: ${{ steps.deployment.outputs.cloudfront_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next**: Point agent.archil.io CNAME to CloudFront domain" >> $GITHUB_STEP_SUMMARY
