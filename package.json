@@ -19,6 +19,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.23",
     "@ai-sdk/react": "^3.0.51",
+    "@marsidev/react-turnstile": "^1.4.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -64,6 +65,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@aws-sdk/client-route-53": "3.988",
+    "@aws-sdk/client-sts": "3.988",
     "@react-router/dev": "^7.8.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/compression": "^1.7.5",
@@ -78,8 +81,6 @@
     "aws-cdk": "^2.214.0",
     "aws-cdk-lib": "^2.214.0",
     "constructs": "^10.4.2",
-    "@aws-sdk/client-route-53": "3.988",
-    "@aws-sdk/client-sts": "3.988",
     "esbuild": "^0.27.1",
     "eslint": "^9.35.0",
     "eslint-import-resolver-typescript": "^4.4.4",
