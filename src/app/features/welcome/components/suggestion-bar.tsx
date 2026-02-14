@@ -16,7 +16,7 @@ export function SuggestionBar({
   return (
     <div
       className={cn(
-        "pb-2 mt-2 w-full max-w-2xl mx-auto transition-all duration-300 ease-in-out",
+        "pb-2 mt-2 w-full max-w-2xl mx-auto",
         isVisible
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-4 pointer-events-none",

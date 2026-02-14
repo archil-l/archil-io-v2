@@ -25,7 +25,7 @@ export function ConversationArea({ className }: ConversationAreaProps) {
               if (part.type === "text") {
                 return (
                   <Message key={`${message.id}-${index}`} from={message.role}>
-                    <MessageContent>
+                    <MessageContent className="transition-all">
                       <MessageResponse>{part.text}</MessageResponse>
                     </MessageContent>
                   </Message>
