@@ -13,7 +13,7 @@ export function InputArea() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
 
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+  const siteKey = import.meta.env.TURNSTILE_SITE_KEY || "";
 
   // Listen for suggestion clicks
   useEffect(() => {

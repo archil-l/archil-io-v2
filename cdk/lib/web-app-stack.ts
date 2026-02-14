@@ -148,6 +148,7 @@ export class WebAppStack extends cdk.Stack {
         ASSETS_BUCKET: assetsBucket.bucketName,
         CLOUDFRONT_URL: `https://${distribution.distributionDomainName}`,
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+        TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY || "",
         TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY || "",
       },
       logRetention: logRetentionDays,
