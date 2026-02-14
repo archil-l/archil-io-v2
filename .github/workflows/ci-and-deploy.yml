@@ -1,0 +1,146 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Run TypeScript type checking
+        run: npx tsc --noEmit
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build release bundle
+        run: npm run release
+
+      - name: Verify bundle
+        run: |
+          if [ -f "dist/lambda-pkg/web-app-handler.js" ]; then
+            echo "✓ Lambda bundle created successfully"
+          else
+            echo "✗ Lambda bundle not found"
+            exit 1
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+          retention-days: 1
+
+  ci-summary:
+    name: CI Status
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          if [ "${{ needs.build.result }}" == "success" ]; then
+            echo "✓ All CI checks passed"
+            exit 0
+          else
+            echo "✗ CI checks failed"
+            exit 1
+          fi
+
+  deploy:
+    name: Deploy to Production
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Only deploy on: main branch pushes or manual trigger
+    # Skip PRs to prevent accidental deployments
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+
+      - name: Build CDK
+        run: npm run cdk:build
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/archil-io-v2-github-actions-role-prod
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy application stack
+        run: npx cdk deploy archil-io-v2-prod --require-approval never
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Get deployment outputs
+        id: deployment
+        run: |
+          aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs' --output table
+          CLOUDFRONT_URL=$(aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs[?OutputKey==`RemixCloudFrontUrl`].OutputValue' --output text)
+          echo "cloudfront_url=$CLOUDFRONT_URL" >> $GITHUB_OUTPUT
+
+      - name: Post deployment summary
+        if: always()
+        run: |
+          echo "## Deployment Summary (Production)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Region**: ${{ secrets.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**CloudFront URL**: ${{ steps.deployment.outputs.cloudfront_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next**: Point agent.archil.io CNAME to CloudFront domain" >> $GITHUB_STEP_SUMMARY
