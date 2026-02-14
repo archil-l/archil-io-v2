@@ -12,7 +12,7 @@ interface ConversationContextType {
   messages: MessageType[];
   isLoading: boolean;
   error: Error | undefined;
-  handleSubmit: (message: { text?: string }) => void;
+  handleSubmit: (message: { text?: string; captchaToken?: string }) => void;
   handleClearConversation: () => void;
 }
 
@@ -83,9 +83,12 @@ export function ConversationProvider({
   }, [messages, isLoaded]);
 
   const handleSubmit = useCallback(
-    (message: { text?: string }) => {
+    (message: { text?: string; captchaToken?: string }) => {
       if (!message.text?.trim()) return;
-      sendMessage({ text: message.text });
+      sendMessage({
+        text: message.text,
+        metadata: { captchaToken: message.captchaToken },
+      });
     },
     [sendMessage],
   );

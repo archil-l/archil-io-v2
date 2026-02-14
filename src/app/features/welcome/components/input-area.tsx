@@ -1,12 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PromptInput } from "~/components/ai-elements/prompt-input";
 import { PromptInputTextarea } from "~/components/ai-elements/prompt-input";
 import { PromptInputSubmit } from "~/components/ai-elements/prompt-input";
+import { TurnstileWidget } from "~/components/ui/turnstile";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { useConversationContext } from "~/contexts/conversation-context";
 
 export function InputArea() {
   const { handleSubmit: onSubmit, isLoading } = useConversationContext();
   const [input, setInput] = useState("");
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+
+  const siteKey = import.meta.env.TURNSTILE_SITE_KEY || "";
 
   // Listen for suggestion clicks
   useEffect(() => {
@@ -27,26 +34,62 @@ export function InputArea() {
     };
   }, [onSubmit]);
 
+  const handleVerifyCaptcha = (token: string) => {
+    setCaptchaToken(token);
+    setCaptchaVerified(true);
+  };
+
   const handleSubmit = (message: { text?: string }) => {
-    onSubmit(message);
+    // Require CAPTCHA verification on first message
+    if (!captchaVerified && siteKey) {
+      alert("Please complete the CAPTCHA verification first");
+      return;
+    }
+
+    onSubmit({ ...message, captchaToken: captchaToken || undefined });
     setInput("");
+    // Don't reset CAPTCHA - it should only show once per session
   };
 
   return (
-    <PromptInput
-      onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto relative"
-    >
-      <PromptInputTextarea
-        value={input}
-        placeholder="Ask me anything..."
-        onChange={(e) => setInput(e.currentTarget.value)}
-        className="pr-12"
-      />
-      <PromptInputSubmit
-        disabled={!input.trim() || isLoading}
-        className="absolute bottom-1 right-1"
-      />
-    </PromptInput>
+    <div className="w-full max-w-2xl mx-auto space-y-4">
+      {/* Show CAPTCHA once until verified */}
+      {!captchaVerified && siteKey && (
+        <TurnstileWidget
+          ref={turnstileRef}
+          siteKey={siteKey}
+          onVerify={handleVerifyCaptcha}
+          onError={() => {
+            console.error("Turnstile error");
+            setCaptchaVerified(false);
+          }}
+          onExpire={() => {
+            setCaptchaVerified(false);
+            setCaptchaToken(null);
+          }}
+        />
+      )}
+
+      {/* Message input */}
+      <PromptInput onSubmit={handleSubmit} className="w-full relative">
+        <PromptInputTextarea
+          value={input}
+          placeholder="Ask me anything..."
+          onChange={(e) => setInput(e.currentTarget.value)}
+          className="pr-12"
+          disabled={!captchaVerified && siteKey}
+        />
+        <PromptInputSubmit
+          disabled={!input.trim() || isLoading || (!captchaVerified && siteKey)}
+          className="absolute bottom-1 right-1"
+        />
+      </PromptInput>
+
+      {!captchaVerified && siteKey && (
+        <p className="text-sm text-muted-foreground text-center">
+          Complete CAPTCHA verification to send your first message
+        </p>
+      )}
+    </div>
   );
 }

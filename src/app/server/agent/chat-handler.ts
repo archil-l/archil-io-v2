@@ -3,6 +3,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import type { Request, Response } from "express";
 import { serverTools } from "./tools";
 import { buildSystemPrompt } from "./system-prompt";
+import { validateTurnstileToken, extractClientIp } from "./turnstile";
 
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -10,11 +11,40 @@ const anthropic = createAnthropic({
 
 export async function handleAgentRequest(req: Request, res: Response) {
   try {
-    const { messages } = req.body as { messages: UIMessage[] };
+    const { messages } = req.body as {
+      messages: UIMessage[];
+    };
 
     if (!process.env.ANTHROPIC_API_KEY) {
       res.status(500).json({ error: "ANTHROPIC_API_KEY is not configured" });
       return;
+    }
+
+    // Extract and validate CAPTCHA token from the first message's metadata
+    if (messages.length > 0) {
+      const firstMessage = messages[0];
+      const captchaToken = (firstMessage.metadata as Record<string, unknown>)
+        ?.captchaToken as string | undefined;
+
+      if (captchaToken) {
+        const clientIp = extractClientIp(req.headers);
+        const validation = await validateTurnstileToken(captchaToken, clientIp);
+
+        if (!validation.valid) {
+          res.status(400).json({
+            error: "CAPTCHA validation failed",
+            details: validation.error,
+          });
+          return;
+        }
+
+        // Remove captchaToken from metadata before processing
+        if (firstMessage.metadata) {
+          const newMetadata = { ...firstMessage.metadata };
+          delete (newMetadata as Record<string, unknown>).captchaToken;
+          firstMessage.metadata = newMetadata;
+        }
+      }
     }
 
     const modelMessages = await convertToModelMessages(messages);
