@@ -1,23 +1,23 @@
 "use client";
 
-import { Header } from "~/components/header";
 import { PREDEFINED_PROMPTS } from "./constants";
 import { useWelcomeSession } from "./hooks/use-welcome-session";
 import { ConversationProvider } from "~/contexts/conversation-context";
-import { WelcomeHeader } from "./components/welcome-header";
+import { WelcomeLoader } from "./components/welcome-loader";
 import { ConversationArea } from "./components/conversation-area";
 import { InputArea } from "./components/input-area";
 import { SuggestionBar } from "./components/suggestion-bar";
 import { ScrollToBottomButton } from "./components/scroll-to-bottom-button";
 import { useAutoScroll } from "./hooks/use-auto-scroll";
 import { useConversationContext } from "~/contexts/conversation-context";
+import { WelcomeHeader } from "./components/welcome-header";
 
 export default function Welcome() {
   const { messages: initialMessages, isLoaded } = useWelcomeSession();
 
   // Show loading state until client-side hydration is complete
   if (!isLoaded) {
-    return <WelcomeHeader isLoaded={isLoaded} />;
+    return <WelcomeLoader />;
   }
 
   return (
@@ -40,7 +40,7 @@ function WelcomeContent() {
   return (
     <div className="relative h-full w-full">
       {/* Header with icon buttons */}
-      <Header />
+      <WelcomeHeader />
 
       {/* Main Content */}
       <ConversationArea className="mt-[100px] w-full max-w-3xl mx-auto relative" />
@@ -67,7 +67,7 @@ function WelcomeContent() {
       />
 
       {/* Input and Suggestions */}
-      <div className="fixed w-full bottom-0 p-4 z-50 justify-items-center bg-(--background)">
+      <div className="fixed w-full bottom-0 p-4 z-50 justify-items-center">
         <InputArea />
       </div>
     </div>

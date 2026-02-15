@@ -25,16 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                // Always start with dark theme
-                document.documentElement.classList.add('dark');
-              })();
-            `,
-          }}
-        />
+        <script src="/theme-init.js" />
       </head>
       <body>
         {children}

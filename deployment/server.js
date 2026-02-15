@@ -29,6 +29,9 @@ if (cloudfrontUrl) {
   app.use("/logo-light.png", (req, res) => {
     res.redirect(302, `${cloudfrontUrl}/logo-light.png`);
   });
+  app.use("/theme-init.js", (req, res) => {
+    res.redirect(302, `${cloudfrontUrl}/theme-init.js`);
+  });
   app.use("/fonts", (req, res) => {
     res.redirect(302, `${cloudfrontUrl}/fonts${req.path}`);
   });

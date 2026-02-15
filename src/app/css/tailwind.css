@@ -123,13 +123,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-  }
-
-  html {
-    transition:
-      background-color 600ms ease-in-out,
-      color 600ms ease-in-out;
+    @apply bg-background text-foreground transition duration-300;
   }
 
   /* Apply dark mode variables by default using media query */
