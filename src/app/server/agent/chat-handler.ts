@@ -82,6 +82,10 @@ export async function handleAgentRequest(req: Request, res: Response) {
         }
       } catch (error) {
         console.error("Stream error:", error);
+        // Write error to client if headers haven't been sent
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Stream error occurred" });
+        }
         res.end();
       }
     };
@@ -89,6 +93,21 @@ export async function handleAgentRequest(req: Request, res: Response) {
     pump();
   } catch (error) {
     console.error("Agent request error:", error);
-    res.status(500).json({ error: "Internal server error" });
+
+    // Provide more helpful error messages
+    let errorMessage = "Failed to process your request";
+    if (error instanceof Error) {
+      if (error.message.includes("API")) {
+        errorMessage = "API service unavailable";
+      } else if (error.message.includes("timeout")) {
+        errorMessage = "Request timed out. Please try again";
+      } else if (error.message.includes("network")) {
+        errorMessage = "Network error. Please check your connection";
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
+    res.status(500).json({ error: errorMessage });
   }
 }

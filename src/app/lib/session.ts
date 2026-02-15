@@ -9,6 +9,8 @@ export type MessageType = {
   role: "user" | "assistant";
   content: string;
   parts: { type: "text"; text: string }[];
+  status?: "pending" | "sent" | "error";
+  error?: string;
 };
 
 /**
