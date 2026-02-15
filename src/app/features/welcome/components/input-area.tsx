@@ -76,7 +76,7 @@ export function InputArea() {
           value={input}
           placeholder="Ask me anything..."
           onChange={(e) => setInput(e.currentTarget.value)}
-          className="pr-12"
+          className="pr-12 bg-background dark:bg-background transition duration-300"
           disabled={!captchaVerified && siteKey}
         />
         <PromptInputSubmit
