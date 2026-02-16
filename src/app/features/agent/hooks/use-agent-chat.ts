@@ -44,15 +44,18 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     themeRef.current = theme;
   }, [theme]);
 
-  // Determine transport based on available endpoints
-  const transportConfig = streamingEndpoint
-    ? {
-        api: streamingEndpoint,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      }
-    : {
-        api: "/api/agent",
-      };
+  // Streaming endpoint is required - throw error if not provided
+  if (!streamingEndpoint) {
+    throw new Error(
+      "Streaming endpoint is required. LLM_STREAM_URL environment variable must be set.",
+    );
+  }
+
+  // Build transport config with streaming endpoint and JWT token
+  const transportConfig = {
+    api: streamingEndpoint,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  };
 
   const chat = useChat({
     transport: new DefaultChatTransport(transportConfig),
