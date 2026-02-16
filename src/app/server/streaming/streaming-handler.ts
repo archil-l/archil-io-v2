@@ -142,15 +142,11 @@ export const handler = awslambda.streamifyResponse(
     responseStream: ResponseStream,
     _context: unknown,
   ) => {
-    // Handle CORS preflight
+    // Handle CORS preflight - headers are managed by Lambda Function URL CORS config
     if (event.requestContext?.http?.method === "OPTIONS") {
       responseStream = awslambda.HttpResponseStream.from(responseStream, {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        },
+        headers: {},
       });
       responseStream.end();
       return;
@@ -169,7 +165,6 @@ export const handler = awslambda.streamifyResponse(
           statusCode: 401,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
           },
         });
         responseStream.write(
@@ -184,7 +179,6 @@ export const handler = awslambda.streamifyResponse(
           statusCode: 401,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
           },
         });
         responseStream.write(
@@ -205,7 +199,6 @@ export const handler = awslambda.streamifyResponse(
           statusCode: 400,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
           },
         });
         responseStream.write(
@@ -221,7 +214,6 @@ export const handler = awslambda.streamifyResponse(
           statusCode: 500,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
           },
         });
         responseStream.write(
@@ -231,16 +223,13 @@ export const handler = awslambda.streamifyResponse(
         return;
       }
 
-      // Set up streaming response
+      // Set up streaming response - CORS headers are managed by Lambda Function URL config
       responseStream = awslambda.HttpResponseStream.from(responseStream, {
         statusCode: 200,
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
         },
       });
 
