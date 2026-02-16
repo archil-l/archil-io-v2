@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { WebAppStack } from "./lib/web-app-stack.js";
 import { GitHubOidcStack } from "./lib/github-oidc-stack.js";
 import { SubdomainStack } from "./lib/subdomain-stack.js";
+import { LLMStreamStack } from "./lib/llm-stream-stack.js";
 import { getEnvironmentConfig, Stage } from "./config/environments.js";
 
 const GITHUB_ORG = "archil-l";
@@ -57,3 +58,16 @@ const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
 
 // Ensure subdomain stack is created before web app stack
 webAppStack.addDependency(subdomainStack);
+
+// LLM Streaming Stack - separate Lambda with Function URL for streaming responses
+const llmStreamStack = new LLMStreamStack(
+  app,
+  `archil-io-v2-llm-stream-${envConfig.stage}`,
+  {
+    envConfig,
+    env: {
+      account: envConfig.accountId,
+      region: envConfig.region,
+    },
+  },
+);

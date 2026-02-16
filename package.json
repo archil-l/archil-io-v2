@@ -10,15 +10,18 @@
   "scripts": {
     "typecheck": "npx tsc --noEmit",
     "build": "npx @react-router/dev build",
-    "release": "rm -rf dist && npm run build && mkdir -p dist/lambda-pkg && node esbuild.config.js",
+    "release": "rm -rf dist && npm run build && mkdir -p dist/lambda-pkg dist/streaming-lambda && node esbuild.config.js",
+    "release:streaming": "mkdir -p dist/streaming-lambda && node esbuild.config.js",
     "dev": "npx @react-router/dev dev",
     "start": "npx @react-router/serve ./dist/server/index.js",
     "clean": "rm -rf dist node_modules",
-    "cdk:build": "tsc -p cdk/tsconfig.json"
+    "cdk:build": "tsc -p cdk/tsconfig.json",
+    "cdk:deploy:streaming": "npm run release:streaming && npm run cdk:build && npx cdk deploy archil-io-v2-llm-stream-prod --require-approval never"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.23",
-    "@ai-sdk/react": "^3.0.51",
+    "@ai-sdk/anthropic": "^3.0.44",
+    "@ai-sdk/react": "^3.0.88",
+    "@anthropic-ai/sdk": "^0.74.0",
     "@marsidev/react-turnstile": "^1.4.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -39,7 +42,7 @@
     "@react-router/serve": "^7.8.2",
     "@tailwindcss/vite": "^4.1.18",
     "@xyflow/react": "^12.10.0",
-    "ai": "^6.0.41",
+    "ai": "^6.0.86",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
