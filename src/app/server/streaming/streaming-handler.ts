@@ -174,11 +174,13 @@ export const handler = awslambda.streamifyResponse(
       }
 
       // Set up streaming response - CORS headers are managed by Lambda Function URL config
+      // Use SSE format for AI SDK v6 UI Message Stream Protocol
       responseStream = awslambda.HttpResponseStream.from(responseStream, {
         statusCode: 200,
         headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "X-Vercel-AI-Data-Stream": "v1",
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache",
+          "x-vercel-ai-ui-message-stream": "v1",
         },
       });
 
@@ -210,7 +212,8 @@ export const handler = awslambda.streamifyResponse(
       for await (const chunk of uiStream) {
         chunkCount++;
         console.log(`[STREAM] Chunk ${chunkCount}:`, JSON.stringify(chunk));
-        responseStream.write(JSON.stringify(chunk) + "\n");
+        // Use SSE format: "data: <json>\n\n"
+        responseStream.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
 
       console.log(`[STREAM] Stream complete. Total chunks: ${chunkCount}`);
