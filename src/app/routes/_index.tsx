@@ -1,5 +1,12 @@
 import type { MetaFunction } from "react-router";
+import { useLoaderData } from "react-router";
 import Welcome from "../features/welcome/welcome";
+
+export async function loader() {
+  return {
+    streamingEndpoint: process.env.LLM_STREAM_URL,
+  };
+}
 
 export const meta: MetaFunction = () => {
   return [
@@ -13,5 +20,6 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  return <Welcome />;
+  const { streamingEndpoint } = useLoaderData<typeof loader>();
+  return <Welcome streamingEndpoint={streamingEndpoint} />;
 }

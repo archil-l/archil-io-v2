@@ -12,15 +12,12 @@ import { useAutoScroll } from "./hooks/use-auto-scroll";
 import { useConversationContext } from "~/contexts/conversation-context";
 import { WelcomeHeader } from "./components/welcome-header";
 
-export default function Welcome() {
-  const { messages: initialMessages, isLoaded } = useWelcomeSession();
+interface WelcomeProps {
+  streamingEndpoint?: string;
+}
 
-  // Get streaming endpoint from window.ENV (injected by server)
-  const streamingEndpoint =
-    typeof window !== "undefined"
-      ? (window as unknown as { ENV?: { LLM_STREAM_URL?: string } }).ENV
-          ?.LLM_STREAM_URL
-      : undefined;
+export default function Welcome({ streamingEndpoint }: WelcomeProps) {
+  const { messages: initialMessages, isLoaded } = useWelcomeSession();
 
   // Show loading state until client-side hydration is complete
   if (!isLoaded) {
