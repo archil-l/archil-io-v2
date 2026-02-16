@@ -34,7 +34,8 @@ export class WebAppStack extends cdk.Stack {
     const logRetentionDays = envConfig.logRetentionDays;
 
     // S3 bucket for static assets
-    const assetsBucket = new s3.Bucket(this, "RemixAssetsBucket", {
+    const assetsBucket = new s3.Bucket(this, "remix-assets-bucket", {
+      bucketName: `archil-io-v2-${envConfig.stage}-remix-assets-bucket`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: false,
@@ -87,13 +88,13 @@ export class WebAppStack extends cdk.Stack {
 
     const distribution = new cloudfront.Distribution(
       this,
-      "RemixAssetsDistribution",
+      "remix-assets-distribution",
       {
         defaultBehavior: {
           origin: origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: new cloudfront.CachePolicy(this, "HtmlCachePolicy", {
+          cachePolicy: new cloudfront.CachePolicy(this, "html-cache-policy", {
             defaultTtl: htmlCacheTtl,
             maxTtl: htmlCacheTtl,
             minTtl: cdk.Duration.seconds(0),
@@ -110,16 +111,20 @@ export class WebAppStack extends cdk.Stack {
               origins.S3BucketOrigin.withOriginAccessControl(assetsBucket),
             viewerProtocolPolicy:
               cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            cachePolicy: new cloudfront.CachePolicy(this, "AssetsCachePolicy", {
-              defaultTtl: assetCacheTtl,
-              maxTtl: assetCacheTtl,
-              minTtl: cdk.Duration.seconds(0),
-              queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
-              headerBehavior: cloudfront.CacheHeaderBehavior.none(),
-              cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-              enableAcceptEncodingGzip: true,
-              enableAcceptEncodingBrotli: true,
-            }),
+            cachePolicy: new cloudfront.CachePolicy(
+              this,
+              "assets-cache-policy",
+              {
+                defaultTtl: assetCacheTtl,
+                maxTtl: assetCacheTtl,
+                minTtl: cdk.Duration.seconds(0),
+                queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
+                headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+                cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+                enableAcceptEncodingGzip: true,
+                enableAcceptEncodingBrotli: true,
+              },
+            ),
           },
         },
         defaultRootObject: undefined,
@@ -135,7 +140,8 @@ export class WebAppStack extends cdk.Stack {
     );
 
     // Lambda function using custom code asset
-    const remixFunction = new lambda.Function(this, "WebAppFunction", {
+    const remixFunction = new lambda.Function(this, "web-app-function", {
+      functionName: `archil-io-v2-${envConfig.stage}-web-app-function`,
       code: lambda.Code.fromAsset(
         path.join(__dirname, "../../../dist/lambda-pkg"),
       ),
@@ -158,7 +164,7 @@ export class WebAppStack extends cdk.Stack {
     assetsBucket.grantRead(remixFunction);
 
     // Deploy static assets to S3 bucket
-    new s3deploy.BucketDeployment(this, "RemixAssetsDeployment", {
+    new s3deploy.BucketDeployment(this, "remix-assets-deployment", {
       sources: [
         s3deploy.Source.asset(path.join(__dirname, "../../../public")),
         s3deploy.Source.asset(path.join(__dirname, "../../../dist/client"), {
@@ -171,14 +177,14 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // HTTP API Gateway (v2) - no automatic /prod/ path
-    const httpApi = new apigatewayv2.HttpApi(this, "RemixHttpApi", {
+    const httpApi = new apigatewayv2.HttpApi(this, "remix-http-api", {
       description: "HTTP API for Remix app",
       createDefaultStage: false,
     });
 
     // Lambda integration
     const lambdaIntegration = new integrations.HttpLambdaIntegration(
-      "RemixIntegration",
+      "remix-integration",
       remixFunction,
     );
 
@@ -197,7 +203,7 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Create stage without path prefix
-    const stage = new apigatewayv2.HttpStage(this, "RemixStage", {
+    const stage = new apigatewayv2.HttpStage(this, "remix-stage", {
       httpApi,
       stageName: "$default",
       autoDeploy: true,
@@ -205,20 +211,20 @@ export class WebAppStack extends cdk.Stack {
 
     // Create API Gateway custom domain name if domain is configured
     if (envConfig.domainName && certificate && hostedZone) {
-      const apiDomain = new apigatewayv2.DomainName(this, "ApiDomain", {
+      const apiDomain = new apigatewayv2.DomainName(this, "api-domain", {
         domainName: envConfig.domainName,
         certificate: certificate,
       });
 
       // Map the custom domain to the HTTP API and stage
-      new apigatewayv2.ApiMapping(this, "ApiMapping", {
+      new apigatewayv2.ApiMapping(this, "api-mapping", {
         api: httpApi,
         domainName: apiDomain,
         stage: stage,
       });
 
       // Create Route 53 A record for custom domain pointing to API Gateway
-      new route53.ARecord(this, "ApiAliasRecord", {
+      new route53.ARecord(this, "api-alias-record", {
         zone: hostedZone,
         recordName: envConfig.domainName,
         target: route53.RecordTarget.fromAlias(
@@ -231,17 +237,17 @@ export class WebAppStack extends cdk.Stack {
     }
 
     // Outputs
-    new cdk.CfnOutput(this, "RemixFunctionApi", {
+    new cdk.CfnOutput(this, "remix-function-api", {
       description: "HTTP API endpoint URL for Remix function",
       value: httpApi.apiEndpoint,
     });
 
-    new cdk.CfnOutput(this, "RemixFunctionArn", {
+    new cdk.CfnOutput(this, "remix-function-arn", {
       description: "Remix Lambda Function ARN",
       value: remixFunction.functionArn,
     });
 
-    new cdk.CfnOutput(this, "RemixCloudFrontUrl", {
+    new cdk.CfnOutput(this, "remix-cloudfront-url", {
       description: "CloudFront distribution URL for static assets",
       value: `https://${distribution.distributionDomainName}`,
     });

@@ -21,7 +21,8 @@ export class LLMStreamStack extends cdk.Stack {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
     // Lambda function for LLM streaming
-    const streamingFunction = new lambda.Function(this, "LLMStreamFunction", {
+    const streamingFunction = new lambda.Function(this, "llm-stream-function", {
+      functionName: `archil-io-v2-${envConfig.stage}-llm-stream-function`,
       code: lambda.Code.fromAsset(
         path.join(__dirname, "../../../dist/streaming-lambda"),
       ),
@@ -50,12 +51,12 @@ export class LLMStreamStack extends cdk.Stack {
     });
 
     // Outputs
-    new cdk.CfnOutput(this, "LLMStreamFunctionUrl", {
+    new cdk.CfnOutput(this, "llm-stream-function-url", {
       description: "Lambda Function URL for LLM streaming",
       value: this.functionUrl.url,
     });
 
-    new cdk.CfnOutput(this, "LLMStreamFunctionArn", {
+    new cdk.CfnOutput(this, "llm-stream-function-arn", {
       description: "LLM Streaming Lambda Function ARN",
       value: streamingFunction.functionArn,
     });
