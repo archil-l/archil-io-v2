@@ -49,13 +49,6 @@ if (cloudfrontUrl) {
 
 app.use(morgan("tiny"));
 
-// API routes - must come before SSR handler
-app.post("/api/agent", async (req, res) => {
-  const { handleAgentRequest } =
-    await import("../src/app/server/agent/index.js");
-  return handleAgentRequest(req, res);
-});
-
 // Lazy-load the SSR handler to avoid top-level await
 let routerHandler = null;
 
