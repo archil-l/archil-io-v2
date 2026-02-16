@@ -6,10 +6,47 @@ import type {
   ToolResultBlockParam,
   MessageParam,
 } from "@anthropic-ai/sdk/resources/messages";
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from "@aws-sdk/client-secrets-manager";
 import { readKnowledge } from "../agent/tools/read-knowledge";
 import { buildSystemPrompt } from "../agent/system-prompt";
+import { verifyAuthHeader } from "../auth/jwt-verifier.js";
 
 const MODEL = "claude-3-5-haiku-latest";
+
+// Secrets Manager client for JWT secret retrieval
+const secretsClient = new SecretsManagerClient({
+  region: process.env.AWS_REGION || "us-east-1",
+});
+
+/**
+ * Fetch JWT signing secret from AWS Secrets Manager
+ */
+async function fetchJWTSecret(): Promise<string> {
+  try {
+    const secretArn = process.env.JWT_SECRET_ARN;
+    if (!secretArn) {
+      throw new Error("JWT_SECRET_ARN environment variable is not set");
+    }
+
+    const command = new GetSecretValueCommand({
+      SecretId: secretArn,
+    });
+    const response = await secretsClient.send(command);
+
+    if (response.SecretString) {
+      const secretJson = JSON.parse(response.SecretString);
+      return secretJson.secret;
+    }
+
+    throw new Error("Secret does not have a SecretString");
+  } catch (error) {
+    console.error("Failed to fetch JWT secret:", error);
+    throw error;
+  }
+}
 
 // Define Anthropic tools from our server tools
 const anthropicTools: Tool[] = [
@@ -120,6 +157,45 @@ export const handler = awslambda.streamifyResponse(
     }
 
     try {
+      // Verify JWT token from Authorization header
+      const jwtSecret = await fetchJWTSecret();
+      const verificationResult = verifyAuthHeader(
+        event.headers || {},
+        jwtSecret,
+      );
+
+      if (!verificationResult) {
+        responseStream = awslambda.HttpResponseStream.from(responseStream, {
+          statusCode: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+        responseStream.write(
+          JSON.stringify({ error: "Missing Authorization header" }),
+        );
+        responseStream.end();
+        return;
+      }
+
+      if (!verificationResult.valid) {
+        responseStream = awslambda.HttpResponseStream.from(responseStream, {
+          statusCode: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+        responseStream.write(
+          JSON.stringify({
+            error: verificationResult.error || "Unauthorized",
+          }),
+        );
+        responseStream.end();
+        return;
+      }
+
       // Parse request body
       const body = event.body ? JSON.parse(event.body) : {};
       const { messages: inputMessages } = body as { messages?: MessageParam[] };

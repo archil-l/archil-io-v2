@@ -5,9 +5,11 @@ import { Construct } from "constructs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import type { EnvironmentConfig } from "../config/environments.js";
+import { SecretsStack } from "./secrets-stack.js";
 
 interface LLMStreamStackProps extends cdk.StackProps {
   envConfig: EnvironmentConfig;
+  secretsStack: SecretsStack;
 }
 
 export class LLMStreamStack extends cdk.Stack {
@@ -16,7 +18,7 @@ export class LLMStreamStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: LLMStreamStackProps) {
     super(scope, id, props);
 
-    const { envConfig } = props;
+    const { envConfig, secretsStack } = props;
 
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,9 +36,13 @@ export class LLMStreamStack extends cdk.Stack {
       environment: {
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
         NODE_ENV: "production",
+        JWT_SECRET_ARN: secretsStack.jwtSecretArn,
       },
       logRetention: envConfig.logRetentionDays,
     });
+
+    // Grant Lambda function read access to JWT secret
+    secretsStack.jwtSecret.grantRead(streamingFunction);
 
     // Add Function URL with streaming enabled
     this.functionUrl = streamingFunction.addFunctionUrl({

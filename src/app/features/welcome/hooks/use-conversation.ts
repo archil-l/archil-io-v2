@@ -11,6 +11,7 @@ import type { UIMessage } from "ai";
 interface UseConversationProps {
   initialMessages?: MessageType[];
   isLoaded: boolean;
+  streamingEndpoint?: string;
 }
 
 // Convert our MessageType to AI SDK UIMessage format
@@ -47,6 +48,7 @@ function toMessageType(
 export function useConversation({
   initialMessages = [],
   isLoaded,
+  streamingEndpoint,
 }: UseConversationProps) {
   // Convert initial messages to AI SDK format
   const aiInitialMessages =
@@ -62,6 +64,7 @@ export function useConversation({
     error: globalError,
   } = useAgentChat({
     initialMessages: aiInitialMessages,
+    streamingEndpoint,
   });
 
   // Track message errors

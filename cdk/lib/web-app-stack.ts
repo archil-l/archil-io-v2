@@ -15,17 +15,21 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import type { EnvironmentConfig } from "../config/environments.js";
 import { SubdomainStack } from "./subdomain-stack.js";
+import { SecretsStack } from "./secrets-stack.js";
+import { LLMStreamStack } from "./llm-stream-stack.js";
 
 interface WebAppStackProps extends cdk.StackProps {
   envConfig: EnvironmentConfig;
   subdomainStack?: SubdomainStack;
+  secretsStack: SecretsStack;
+  llmStreamStack: LLMStreamStack;
 }
 
 export class WebAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
 
-    const { envConfig } = props;
+    const { envConfig, secretsStack, llmStreamStack } = props;
 
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -156,12 +160,18 @@ export class WebAppStack extends cdk.Stack {
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
         TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY || "",
         TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY || "",
+        JWT_SECRET_ARN: secretsStack.jwtSecretArn,
+        JWT_EXPIRY_HOURS: "1",
+        LLM_STREAM_URL: llmStreamStack.functionUrl.url,
       },
       logRetention: logRetentionDays,
     });
 
     // Grant Lambda function read access to S3 bucket
     assetsBucket.grantRead(remixFunction);
+
+    // Grant Lambda function read access to JWT secret
+    secretsStack.jwtSecret.grantRead(remixFunction);
 
     // Deploy static assets to S3 bucket
     new s3deploy.BucketDeployment(this, "remix-assets-deployment", {

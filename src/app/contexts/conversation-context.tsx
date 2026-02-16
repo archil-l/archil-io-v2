@@ -62,12 +62,14 @@ interface ConversationProviderProps {
   children: React.ReactNode;
   initialMessages?: MessageType[];
   isLoaded: boolean;
+  streamingEndpoint?: string;
 }
 
 export function ConversationProvider({
   children,
   initialMessages = [],
   isLoaded,
+  streamingEndpoint,
 }: ConversationProviderProps) {
   // Convert initial messages to AI SDK format
   const aiInitialMessages =
@@ -83,6 +85,7 @@ export function ConversationProvider({
     error: globalError,
   } = useAgentChat({
     initialMessages: aiInitialMessages,
+    streamingEndpoint,
   });
 
   // Track message errors
