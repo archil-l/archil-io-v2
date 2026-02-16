@@ -10,8 +10,8 @@ import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
-import { readKnowledge } from "../agent/tools/read-knowledge";
-import { buildSystemPrompt } from "../agent/system-prompt";
+import { readKnowledge } from "./agent/tools/read-knowledge";
+import { buildSystemPrompt } from "./agent/system-prompt";
 import { verifyAuthHeader } from "../auth/jwt-verifier.js";
 
 const MODEL = "claude-3-5-haiku-latest";

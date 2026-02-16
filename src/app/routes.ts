@@ -2,5 +2,5 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/_index.tsx"),
-  route("api/agent", "routes/api/agent.ts"),
+  route("api/jwt-token", "routes/api/jwt-token.ts"),
 ] satisfies RouteConfig;
