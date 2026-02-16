@@ -1,16 +1,10 @@
-import Anthropic from "@anthropic-ai/sdk";
-import type {
-  MessageStreamEvent,
-  ContentBlockDeltaEvent,
-  Tool,
-  ToolResultBlockParam,
-  MessageParam,
-} from "@anthropic-ai/sdk/resources/messages";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
-import { readKnowledge } from "./agent/tools/read-knowledge";
+import { serverTools } from "./agent";
 import { buildSystemPrompt } from "./agent/system-prompt";
 import { verifyAuthHeader } from "../auth/jwt-verifier.js";
 
@@ -46,57 +40,6 @@ async function fetchJWTSecret(): Promise<string> {
     console.error("Failed to fetch JWT secret:", error);
     throw error;
   }
-}
-
-// Define Anthropic tools from our server tools
-const anthropicTools: Tool[] = [
-  {
-    name: "getContactInfo",
-    description:
-      "Get contact information including email, social links, and website",
-    input_schema: {
-      type: "object" as const,
-      properties: {},
-      required: [],
-    },
-  },
-  {
-    name: "getExperience",
-    description: "Get work history and career information",
-    input_schema: {
-      type: "object" as const,
-      properties: {},
-      required: [],
-    },
-  },
-  {
-    name: "getTechnologies",
-    description: "Get technical skills and technologies used",
-    input_schema: {
-      type: "object" as const,
-      properties: {},
-      required: [],
-    },
-  },
-];
-
-// Execute a tool and return the result
-function executeTool(toolName: string): string {
-  switch (toolName) {
-    case "getContactInfo":
-      return readKnowledge("contact.md");
-    case "getExperience":
-      return readKnowledge("experience.md");
-    case "getTechnologies":
-      return readKnowledge("technologies.md");
-    default:
-      return JSON.stringify({ error: `Unknown tool: ${toolName}` });
-  }
-}
-
-// Format SSE event
-function formatSSE(event: string, data: unknown): string {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
 // Lambda streaming types
@@ -192,7 +135,9 @@ export const handler = awslambda.streamifyResponse(
 
       // Parse request body
       const body = event.body ? JSON.parse(event.body) : {};
-      const { messages: inputMessages } = body as { messages?: MessageParam[] };
+      const { messages: inputMessages } = body as {
+        messages?: Parameters<typeof convertToModelMessages>[0];
+      };
 
       if (!inputMessages || !Array.isArray(inputMessages)) {
         responseStream = awslambda.HttpResponseStream.from(responseStream, {
@@ -227,158 +172,35 @@ export const handler = awslambda.streamifyResponse(
       responseStream = awslambda.HttpResponseStream.from(responseStream, {
         statusCode: 200,
         headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Vercel-AI-Data-Stream": "v1",
         },
       });
 
-      // Create Anthropic client
-      const anthropic = new Anthropic({
+      // Create Anthropic provider using AI SDK
+      const anthropic = createAnthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
       });
 
-      // Track conversation messages for tool use loops
-      let messages: MessageParam[] = [...inputMessages];
-      let continueLoop = true;
+      // Convert UI messages to model messages
+      const modelMessages = await convertToModelMessages(inputMessages);
 
-      while (continueLoop) {
-        continueLoop = false;
+      // Use streamText with automatic tool execution via stopWhen
+      const result = streamText({
+        model: anthropic(MODEL),
+        system: buildSystemPrompt(),
+        messages: modelMessages,
+        tools: serverTools,
+        stopWhen: stepCountIs(5), // Allow up to 5 tool execution loops
+      });
 
-        // Create streaming message
-        const stream = anthropic.messages.stream({
-          model: MODEL,
-          max_tokens: 4096,
-          system: buildSystemPrompt(),
-          messages,
-          tools: anthropicTools,
-        });
+      // Stream the response using AI SDK UI Message Stream Protocol
+      const uiStream = result.toUIMessageStream();
 
-        // Track tool uses in this response
-        const toolUses: Array<{
-          id: string;
-          name: string;
-          input: Record<string, unknown>;
-        }> = [];
-        let currentToolUse: { id: string; name: string; input: string } | null =
-          null;
-
-        // Stream events to client
-        for await (const event of stream) {
-          const streamEvent = event as MessageStreamEvent;
-
-          switch (streamEvent.type) {
-            case "content_block_start":
-              if (streamEvent.content_block.type === "text") {
-                responseStream.write(
-                  formatSSE("content_block_start", {
-                    type: "text",
-                    index: streamEvent.index,
-                  }),
-                );
-              } else if (streamEvent.content_block.type === "tool_use") {
-                currentToolUse = {
-                  id: streamEvent.content_block.id,
-                  name: streamEvent.content_block.name,
-                  input: "",
-                };
-                responseStream.write(
-                  formatSSE("tool_use_start", {
-                    id: streamEvent.content_block.id,
-                    name: streamEvent.content_block.name,
-                  }),
-                );
-              }
-              break;
-
-            case "content_block_delta": {
-              const deltaEvent = streamEvent as ContentBlockDeltaEvent;
-              if (deltaEvent.delta.type === "text_delta") {
-                responseStream.write(
-                  formatSSE("text_delta", {
-                    text: deltaEvent.delta.text,
-                  }),
-                );
-              } else if (deltaEvent.delta.type === "input_json_delta") {
-                if (currentToolUse) {
-                  currentToolUse.input += deltaEvent.delta.partial_json;
-                }
-              }
-              break;
-            }
-
-            case "content_block_stop":
-              if (currentToolUse) {
-                try {
-                  const parsedInput = currentToolUse.input
-                    ? JSON.parse(currentToolUse.input)
-                    : {};
-                  toolUses.push({
-                    id: currentToolUse.id,
-                    name: currentToolUse.name,
-                    input: parsedInput,
-                  });
-                } catch {
-                  toolUses.push({
-                    id: currentToolUse.id,
-                    name: currentToolUse.name,
-                    input: {},
-                  });
-                }
-                currentToolUse = null;
-              }
-              responseStream.write(formatSSE("content_block_stop", {}));
-              break;
-
-            case "message_stop":
-              // Check if we need to handle tool results
-              if (toolUses.length > 0) {
-                // Execute tools and prepare results
-                const toolResults: ToolResultBlockParam[] = toolUses.map(
-                  (toolUse) => {
-                    const result = executeTool(toolUse.name);
-                    responseStream.write(
-                      formatSSE("tool_result", {
-                        tool_use_id: toolUse.id,
-                        result,
-                      }),
-                    );
-                    return {
-                      type: "tool_result" as const,
-                      tool_use_id: toolUse.id,
-                      content: result,
-                    };
-                  },
-                );
-
-                // Add assistant message with tool uses and user message with results
-                const assistantMessage = await stream.finalMessage();
-                messages = [
-                  ...messages,
-                  { role: "assistant", content: assistantMessage.content },
-                  { role: "user", content: toolResults },
-                ];
-
-                // Continue the loop to get the model's response to tool results
-                continueLoop = true;
-              } else {
-                responseStream.write(formatSSE("message_stop", {}));
-              }
-              break;
-
-            case "message_start":
-              responseStream.write(
-                formatSSE("message_start", {
-                  id: streamEvent.message.id,
-                  model: streamEvent.message.model,
-                }),
-              );
-              break;
-          }
-        }
+      for await (const chunk of uiStream) {
+        responseStream.write(JSON.stringify(chunk) + "\n");
       }
 
-      responseStream.write(formatSSE("done", {}));
       responseStream.end();
     } catch (error) {
       console.error("Streaming error:", error);
@@ -388,7 +210,7 @@ export const handler = awslambda.streamifyResponse(
 
       // Try to send error if stream hasn't ended
       try {
-        responseStream.write(formatSSE("error", { message: errorMessage }));
+        responseStream.write(JSON.stringify({ error: errorMessage }));
         responseStream.end();
       } catch {
         // Stream may already be closed
