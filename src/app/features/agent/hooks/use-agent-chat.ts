@@ -1,6 +1,6 @@
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useThemeContext } from "~/contexts/theme-context";
 import type { SetThemeInput, CopyToClipboardInput } from "../tools/client";
 
@@ -8,11 +8,32 @@ interface UseAgentChatOptions {
   initialMessages?: UIMessage[];
   onThemeChange?: (theme: "light" | "dark") => void;
   onCopySuccess?: (label?: string) => void;
+  streamingEndpoint?: string;
 }
 
 export function useAgentChat(options: UseAgentChatOptions = {}) {
   const { theme, toggleTheme } = useThemeContext();
-  const { onThemeChange, onCopySuccess, initialMessages } = options;
+  const { onThemeChange, onCopySuccess, initialMessages, streamingEndpoint } =
+    options;
+  const [token, setToken] = useState<string | null>(null);
+
+  // Fetch JWT token on component mount
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await fetch("/api/jwt-token");
+        if (!response.ok) {
+          throw new Error("Failed to fetch JWT token");
+        }
+        const data = (await response.json()) as { token: string };
+        setToken(data.token);
+      } catch (error) {
+        console.error("Failed to fetch JWT token:", error);
+      }
+    };
+
+    fetchToken();
+  }, []);
 
   // Store addToolOutput in a ref so we can access it in the callback
   const addToolOutputRef = useRef<typeof chat.addToolOutput | null>(null);
@@ -23,10 +44,18 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     themeRef.current = theme;
   }, [theme]);
 
+  // Determine transport based on available endpoints
+  const transportConfig = streamingEndpoint
+    ? {
+        api: streamingEndpoint,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }
+    : {
+        api: "/api/agent",
+      };
+
   const chat = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/agent",
-    }),
+    transport: new DefaultChatTransport(transportConfig),
     messages: initialMessages,
     onToolCall: async ({ toolCall }) => {
       // Skip dynamic tools

@@ -1,40 +1,83 @@
 import { build } from "esbuild";
-import { writeFileSync } from "fs";
+import { writeFileSync, mkdirSync } from "fs";
 
-build({
+// Common external modules
+const commonExternal = [
+  // AWS Lambda runtime APIs
+  "@aws-sdk/*",
+  // Node.js built-ins
+  "fs",
+  "path",
+  "stream",
+  "util",
+  "crypto",
+  "os",
+  "buffer",
+  "events",
+  "http",
+  "https",
+  "zlib",
+  "net",
+  "tls",
+  "dns",
+  "child_process",
+  "async_hooks",
+];
+
+// Build web app Lambda
+const buildWebApp = build({
   entryPoints: ["deployment/server.js"],
   bundle: true,
   outfile: "dist/lambda-pkg/web-app-handler.js",
   platform: "node",
   format: "cjs",
   target: "node24",
-  external: [
-    // AWS Lambda runtime APIs
-    "@aws-sdk/*",
-    // Node.js built-ins
-    "fs",
-    "path",
-    "stream",
-    "util",
-    "crypto",
-    "os",
-    "buffer",
-    "events",
-    "http",
-    "https",
-    "zlib",
-  ],
+  external: commonExternal,
   minify: true,
   sourcemap: false,
   define: {
     "process.env.NODE_ENV": '"production"',
   },
-})
+});
+
+// Build streaming Lambda
+const buildStreaming = build({
+  entryPoints: ["deployment/streaming.js"],
+  bundle: true,
+  outfile: "dist/streaming-lambda/streaming-handler.js",
+  platform: "node",
+  format: "cjs",
+  target: "node24",
+  external: commonExternal,
+  minify: true,
+  sourcemap: false,
+  define: {
+    "process.env.NODE_ENV": '"production"',
+  },
+});
+
+// Run both builds in parallel
+Promise.all([buildWebApp, buildStreaming])
   .then(() => {
-    // Create package.json to mark the Lambda package as CommonJS module
+    // Create package.json files to mark the Lambda packages as CommonJS modules
     writeFileSync(
       "dist/lambda-pkg/package.json",
       JSON.stringify({ type: "commonjs" }, null, 2),
     );
+
+    // Ensure streaming lambda directory exists
+    mkdirSync("dist/streaming-lambda", { recursive: true });
+    writeFileSync(
+      "dist/streaming-lambda/package.json",
+      JSON.stringify({ type: "commonjs" }, null, 2),
+    );
+
+    console.log("✅ Built web app Lambda: dist/lambda-pkg/web-app-handler.js");
+    console.log(
+      "✅ Built streaming Lambda: dist/streaming-lambda/streaming-handler.js",
+    );
   })
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error("Build failed:", error);
+    process.exit(1);
+  });

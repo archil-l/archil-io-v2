@@ -4,6 +4,8 @@ import * as cdk from "aws-cdk-lib";
 import { WebAppStack } from "./lib/web-app-stack.js";
 import { GitHubOidcStack } from "./lib/github-oidc-stack.js";
 import { SubdomainStack } from "./lib/subdomain-stack.js";
+import { LLMStreamStack } from "./lib/llm-stream-stack.js";
+import { SecretsStack } from "./lib/secrets-stack.js";
 import { getEnvironmentConfig, Stage } from "./config/environments.js";
 
 const GITHUB_ORG = "archil-l";
@@ -16,6 +18,19 @@ const envConfig = getEnvironmentConfig(Stage.prod);
 
 console.log(
   `Deploying to ${envConfig.stage} environment (Account: ${envConfig.accountId}, Region: ${envConfig.region})`,
+);
+
+// Secrets Stack - manages JWT signing secret
+const secretsStack = new SecretsStack(
+  app,
+  `archil-io-v2-secrets-${envConfig.stage}`,
+  {
+    envConfig,
+    env: {
+      account: envConfig.accountId,
+      region: envConfig.region,
+    },
+  },
 );
 
 // OIDC Stack - for GitHub Actions authentication
@@ -45,10 +60,29 @@ const subdomainStack = new SubdomainStack(
   },
 );
 
+// LLM Streaming Stack - separate Lambda with Function URL for streaming responses
+const llmStreamStack = new LLMStreamStack(
+  app,
+  `archil-io-v2-llm-stream-${envConfig.stage}`,
+  {
+    envConfig,
+    secretsStack,
+    env: {
+      account: envConfig.accountId,
+      region: envConfig.region,
+    },
+  },
+);
+
+// Ensure secrets stack is created before LLM stream stack
+llmStreamStack.addDependency(secretsStack);
+
 // Application Stack - the actual web app
 const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
   envConfig,
   subdomainStack,
+  secretsStack,
+  llmStreamStack,
   env: {
     account: envConfig.accountId,
     region: envConfig.region,
@@ -57,3 +91,5 @@ const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
 
 // Ensure subdomain stack is created before web app stack
 webAppStack.addDependency(subdomainStack);
+webAppStack.addDependency(secretsStack);
+webAppStack.addDependency(llmStreamStack);

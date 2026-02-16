@@ -21,7 +21,7 @@ export class GitHubOidcStack extends cdk.Stack {
     // Create OIDC Identity Provider for GitHub Actions
     this.oidcProvider = new iam.OpenIdConnectProvider(
       this,
-      "GitHubOidcProvider",
+      "github-oidc-provider",
       {
         url: "https://token.actions.githubusercontent.com",
         clientIds: ["sts.amazonaws.com"],
@@ -29,7 +29,7 @@ export class GitHubOidcStack extends cdk.Stack {
     );
 
     // Create IAM Role for GitHub Actions
-    this.role = new iam.Role(this, "GitHubActionsRole", {
+    this.role = new iam.Role(this, "github-actions-role", {
       roleName: `archil-io-v2-github-actions-role-${envConfig.stage}`,
       assumedBy: new iam.FederatedPrincipal(
         this.oidcProvider.openIdConnectProviderArn,
@@ -195,13 +195,13 @@ export class GitHubOidcStack extends cdk.Stack {
     );
 
     // Output the role ARN for GitHub Secrets
-    new cdk.CfnOutput(this, "GitHubActionsRoleArn", {
+    new cdk.CfnOutput(this, "github-actions-role-arn", {
       description: "ARN of the GitHub Actions IAM role (use in GitHub Secrets)",
       value: this.role.roleArn,
       exportName: `archil-io-v2-github-actions-role-arn-${envConfig.stage}`,
     });
 
-    new cdk.CfnOutput(this, "OidcProviderArn", {
+    new cdk.CfnOutput(this, "oidc-provider-arn", {
       description: "ARN of the OIDC Identity Provider",
       value: this.oidcProvider.openIdConnectProviderArn,
     });
