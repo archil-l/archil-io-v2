@@ -40,7 +40,17 @@ export function useAgentChat(options: UseAgentChatOptions) {
   const chat = useChat({
     transport: new DefaultChatTransport(transportConfig),
     messages: initialMessages,
+    onError: (error) => {
+      console.error("[CHAT] Error:", error);
+    },
+    onFinish: (message) => {
+      console.log(
+        "[CHAT] onFinish - message:",
+        JSON.stringify(message, null, 2),
+      );
+    },
     onToolCall: async ({ toolCall }) => {
+      console.log("[CHAT] onToolCall:", JSON.stringify(toolCall, null, 2));
       // Skip dynamic tools
       if (toolCall.dynamic) return;
 
@@ -102,6 +112,19 @@ export function useAgentChat(options: UseAgentChatOptions) {
 
   // Update the ref after chat is created
   addToolOutputRef.current = chat.addToolOutput;
+
+  // Debug logging for status and messages
+  useEffect(() => {
+    console.log("[CHAT] Status changed:", chat.status);
+  }, [chat.status]);
+
+  useEffect(() => {
+    console.log("[CHAT] Messages updated:", chat.messages.length, "messages");
+    if (chat.messages.length > 0) {
+      const lastMsg = chat.messages[chat.messages.length - 1];
+      console.log("[CHAT] Last message:", JSON.stringify(lastMsg, null, 2));
+    }
+  }, [chat.messages]);
 
   return {
     ...chat,
