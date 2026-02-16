@@ -77,10 +77,12 @@ export function InputArea() {
           placeholder="Ask me anything..."
           onChange={(e) => setInput(e.currentTarget.value)}
           className="pr-12 bg-background dark:bg-background transition duration-300"
-          disabled={!captchaVerified && siteKey}
+          disabled={!captchaVerified && !!siteKey}
         />
         <PromptInputSubmit
-          disabled={!input.trim() || isLoading || (!captchaVerified && siteKey)}
+          disabled={
+            !input.trim() || isLoading || (!captchaVerified && !!siteKey)
+          }
           className="absolute bottom-1 right-1"
         />
       </PromptInput>

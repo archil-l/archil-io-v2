@@ -11,6 +11,7 @@ import {
   type MessageType,
 } from "~/lib/session";
 import { useAgentChat } from "~/features/agent";
+import { useToken } from "~/hooks/use-token";
 import { INITIAL_WELCOME_MESSAGE } from "~/features/welcome/constants";
 import type { UIMessage } from "ai";
 
@@ -62,7 +63,7 @@ interface ConversationProviderProps {
   children: React.ReactNode;
   initialMessages?: MessageType[];
   isLoaded: boolean;
-  streamingEndpoint?: string;
+  streamingEndpoint: string;
 }
 
 export function ConversationProvider({
@@ -71,6 +72,40 @@ export function ConversationProvider({
   isLoaded,
   streamingEndpoint,
 }: ConversationProviderProps) {
+  const { token, isTokenLoading } = useToken();
+
+  // Don't render until token is available
+  if (isTokenLoading || !token) {
+    return null;
+  }
+
+  return (
+    <ConversationProviderInner
+      initialMessages={initialMessages}
+      isLoaded={isLoaded}
+      streamingEndpoint={streamingEndpoint}
+      token={token}
+    >
+      {children}
+    </ConversationProviderInner>
+  );
+}
+
+interface ConversationProviderInnerProps {
+  children: React.ReactNode;
+  initialMessages: MessageType[];
+  isLoaded: boolean;
+  streamingEndpoint: string;
+  token: string;
+}
+
+function ConversationProviderInner({
+  children,
+  initialMessages,
+  isLoaded,
+  streamingEndpoint,
+  token,
+}: ConversationProviderInnerProps) {
   // Convert initial messages to AI SDK format
   const aiInitialMessages =
     initialMessages.length > 0
@@ -86,6 +121,7 @@ export function ConversationProvider({
   } = useAgentChat({
     initialMessages: aiInitialMessages,
     streamingEndpoint,
+    token,
   });
 
   // Track message errors

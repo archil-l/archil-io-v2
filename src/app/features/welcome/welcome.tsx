@@ -13,7 +13,7 @@ import { useConversationContext } from "~/contexts/conversation-context";
 import { WelcomeHeader } from "./components/welcome-header";
 
 interface WelcomeProps {
-  streamingEndpoint?: string;
+  streamingEndpoint: string;
 }
 
 export default function Welcome({ streamingEndpoint }: WelcomeProps) {

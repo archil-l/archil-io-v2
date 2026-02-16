@@ -1,6 +1,6 @@
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useThemeContext } from "~/contexts/theme-context";
 import type { SetThemeInput, CopyToClipboardInput } from "../tools/client";
 
@@ -8,32 +8,19 @@ interface UseAgentChatOptions {
   initialMessages?: UIMessage[];
   onThemeChange?: (theme: "light" | "dark") => void;
   onCopySuccess?: (label?: string) => void;
-  streamingEndpoint?: string;
+  streamingEndpoint: string;
+  token: string;
 }
 
-export function useAgentChat(options: UseAgentChatOptions = {}) {
+export function useAgentChat(options: UseAgentChatOptions) {
   const { theme, toggleTheme } = useThemeContext();
-  const { onThemeChange, onCopySuccess, initialMessages, streamingEndpoint } =
-    options;
-  const [token, setToken] = useState<string | null>(null);
-
-  // Fetch JWT token on component mount
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const response = await fetch("/api/jwt-token");
-        if (!response.ok) {
-          throw new Error("Failed to fetch JWT token");
-        }
-        const data = (await response.json()) as { token: string };
-        setToken(data.token);
-      } catch (error) {
-        console.error("Failed to fetch JWT token:", error);
-      }
-    };
-
-    fetchToken();
-  }, []);
+  const {
+    onThemeChange,
+    onCopySuccess,
+    initialMessages,
+    streamingEndpoint,
+    token,
+  } = options;
 
   // Store addToolOutput in a ref so we can access it in the callback
   const addToolOutputRef = useRef<typeof chat.addToolOutput | null>(null);
@@ -44,17 +31,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     themeRef.current = theme;
   }, [theme]);
 
-  // Streaming endpoint is required - throw error if not provided
-  if (!streamingEndpoint) {
-    throw new Error(
-      "Streaming endpoint is required. LLM_STREAM_URL environment variable must be set.",
-    );
-  }
-
   // Build transport config with streaming endpoint and JWT token
   const transportConfig = {
     api: streamingEndpoint,
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: { Authorization: `Bearer ${token}` },
   };
 
   const chat = useChat({

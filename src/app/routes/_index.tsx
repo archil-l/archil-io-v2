@@ -3,8 +3,12 @@ import { useLoaderData } from "react-router";
 import Welcome from "../features/welcome/welcome";
 
 export async function loader() {
+  const streamingEndpoint = process.env.LLM_STREAM_URL;
+  if (!streamingEndpoint) {
+    throw new Error("LLM_STREAM_URL environment variable is required");
+  }
   return {
-    streamingEndpoint: process.env.LLM_STREAM_URL,
+    streamingEndpoint,
   };
 }
 
