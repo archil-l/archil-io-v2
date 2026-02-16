@@ -139,11 +139,6 @@ export const handler = awslambda.streamifyResponse(
         messages?: Parameters<typeof convertToModelMessages>[0];
       };
 
-      console.log(
-        "[STREAM] Received request with messages:",
-        JSON.stringify(inputMessages, null, 2),
-      );
-
       if (!inputMessages || !Array.isArray(inputMessages)) {
         responseStream = awslambda.HttpResponseStream.from(responseStream, {
           statusCode: 400,
@@ -191,10 +186,6 @@ export const handler = awslambda.streamifyResponse(
 
       // Convert UI messages to model messages
       const modelMessages = await convertToModelMessages(inputMessages);
-      console.log(
-        "[STREAM] Converted to model messages:",
-        JSON.stringify(modelMessages, null, 2),
-      );
 
       // Use streamText with automatic tool execution via stopWhen
       const result = streamText({
@@ -208,15 +199,11 @@ export const handler = awslambda.streamifyResponse(
       // Stream the response using AI SDK UI Message Stream Protocol
       const uiStream = result.toUIMessageStream();
 
-      let chunkCount = 0;
       for await (const chunk of uiStream) {
-        chunkCount++;
-        console.log(`[STREAM] Chunk ${chunkCount}:`, JSON.stringify(chunk));
         // Use SSE format: "data: <json>\n\n"
         responseStream.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
 
-      console.log(`[STREAM] Stream complete. Total chunks: ${chunkCount}`);
       responseStream.end();
     } catch (error) {
       console.error("Streaming error:", error);
