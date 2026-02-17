@@ -12,7 +12,6 @@ import {
 import { cn } from "~/lib/utils";
 import { useConversationContext } from "~/contexts/conversation-context";
 import { useAutoScroll } from "../hooks/use-auto-scroll";
-import { RefreshCw } from "lucide-react";
 
 interface ConversationAreaProps {
   className: string;
@@ -37,17 +36,10 @@ export function ConversationArea({ className }: ConversationAreaProps) {
                   <div key={`${message.id}-${index}`}>
                     <Message from={message.role}>
                       <MessageContent className="transition-all">
-                        <MessageResponse>{part.text}</MessageResponse>
+                        <MessageResponse className=" prose-p:my-2 prose-li:my-1 prose-ul:my-2 prose-ol:my-1 prose-headings:mt- prose-headings:mb-2">
+                          {part.text}
+                        </MessageResponse>
                       </MessageContent>
-                      {message.role === "user" &&
-                        message.status === "pending" && (
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <div className="animate-spin">
-                              <RefreshCw size={14} />
-                            </div>
-                            Sending...
-                          </div>
-                        )}
                     </Message>
                   </div>
                 );

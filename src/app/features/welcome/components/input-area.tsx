@@ -83,6 +83,7 @@ export function InputArea() {
           disabled={
             !input.trim() || isLoading || (!captchaVerified && !!siteKey)
           }
+          status={isLoading ? "submitted" : undefined}
           className="absolute bottom-1 right-1"
         />
       </PromptInput>

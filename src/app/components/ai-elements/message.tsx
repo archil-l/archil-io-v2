@@ -308,7 +308,7 @@ export const MessageResponse = memo(
     <div className="prose">
       <Streamdown
         className={cn(
-          "max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+          "max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 prose-p:mb-2 prose-li:my-0 prose-ul:my-0 prose-ol:my-1 prose-headings:mt-1 prose-headings:mb-3",
           className,
         )}
         {...props}
