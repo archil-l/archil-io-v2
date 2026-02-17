@@ -36,9 +36,7 @@ export function ConversationArea({ className }: ConversationAreaProps) {
                   <div key={`${message.id}-${index}`}>
                     <Message from={message.role}>
                       <MessageContent className="transition-all">
-                        <MessageResponse className=" prose-p:my-2 prose-li:my-1 prose-ul:my-2 prose-ol:my-1 prose-headings:mt- prose-headings:mb-2">
-                          {part.text}
-                        </MessageResponse>
+                        <MessageResponse>{part.text}</MessageResponse>
                       </MessageContent>
                     </Message>
                   </div>
