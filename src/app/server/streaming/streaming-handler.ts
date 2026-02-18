@@ -192,7 +192,7 @@ export const handler = awslambda.streamifyResponse(
         model: anthropic(MODEL),
         system: buildSystemPrompt(),
         messages: modelMessages,
-        // tools: serverTools,
+        tools: serverTools,
         stopWhen: stepCountIs(5), // Allow up to 5 tool execution loops
       });
 

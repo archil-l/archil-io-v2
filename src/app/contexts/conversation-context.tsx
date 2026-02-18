@@ -13,12 +13,13 @@ import {
 import { useAgentChat } from "~/features/agent";
 import { useToken } from "~/hooks/use-token";
 import { INITIAL_WELCOME_MESSAGE } from "~/features/welcome/constants";
-import type { UIMessage } from "ai";
+import type { UIMessage, ToolUIPart } from "ai";
 
 interface ConversationContextType {
   messages: MessageType[];
   isLoading: boolean;
   error: Error | undefined;
+  toolCalls: ToolUIPart[];
   handleSubmit: (message: { text?: string; captchaToken?: string }) => void;
   handleRetryMessage: (messageId: string) => void;
   handleClearConversation: () => void;
@@ -38,11 +39,11 @@ function toAIMessage(msg: MessageType): UIMessage {
 }
 
 // Convert AI SDK UIMessage to our MessageType format
-function toMessageType(
+const toMessageType = (
   msg: UIMessage,
   status?: "pending" | "sent" | "error",
   error?: string,
-): MessageType {
+): MessageType => {
   // Extract text from parts
   const textParts = msg.parts.filter(
     (p): p is { type: "text"; text: string } => p.type === "text",
@@ -57,7 +58,7 @@ function toMessageType(
     status,
     error,
   };
-}
+};
 
 interface ConversationProviderProps {
   children: React.ReactNode;
@@ -118,6 +119,7 @@ function ConversationProviderInner({
     setMessages: setAIMessages,
     isLoading,
     error: globalError,
+    toolCalls = [],
   } = useAgentChat({
     initialMessages: aiInitialMessages,
     streamingEndpoint,
@@ -242,6 +244,7 @@ function ConversationProviderInner({
         messages,
         isLoading,
         error: globalError,
+        toolCalls,
         handleSubmit,
         handleRetryMessage,
         handleClearConversation,
