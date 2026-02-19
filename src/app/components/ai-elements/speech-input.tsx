@@ -51,12 +51,12 @@ interface SpeechRecognitionErrorEvent extends Event {
   error: string;
 }
 
-// declare global {
-//   interface Window {
-//     SpeechRecognition: new () => SpeechRecognition;
-//     webkitSpeechRecognition: new () => SpeechRecognition;
-//   }
-// }
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
 
 type SpeechInputMode = "speech-recognition" | "media-recorder" | "none";
 

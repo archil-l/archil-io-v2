@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  getOrCreateSessionId,
-  getConversationHistory,
-  type MessageType,
-} from "~/lib/session";
+import { getOrCreateSessionId, getConversationHistory } from "~/lib/session";
 import { INITIAL_WELCOME_MESSAGE } from "../constants";
+import { AgentUIMessage } from "~/lib/message-schema";
 
 export function useWelcomeSession() {
   const [sessionId, setSessionId] = useState<string>("");
-  const [messages, setMessages] = useState<MessageType[]>([
+  const [messages, setMessages] = useState<AgentUIMessage[]>([
     INITIAL_WELCOME_MESSAGE,
   ]);
   const [isLoaded, setIsLoaded] = useState(false);

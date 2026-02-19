@@ -1,5 +1,3 @@
-import { type MessageType } from "~/lib/session";
-
 export const WELCOME_MESSAGE = `# Welcome! 🖖🏻 \n\n
 
 My name is Archil Lelashvili, I am a software engineer building dynamic, semantic, accessible, and user-friendly web applications.
@@ -8,6 +6,7 @@ Welcome to my personal page. I'm excited to share my work, projects, and insight
 `;
 
 import { Briefcase, Code, Mail, type LucideIcon } from "lucide-react";
+import { AgentUIMessage } from "~/lib/message-schema";
 
 export interface SuggestionPrompt {
   text: string;
@@ -33,9 +32,8 @@ export const PREDEFINED_PROMPTS: SuggestionPrompt[] = [
   },
 ];
 
-export const INITIAL_WELCOME_MESSAGE: MessageType = {
+export const INITIAL_WELCOME_MESSAGE: AgentUIMessage = {
   id: "welcome",
   role: "assistant",
-  content: WELCOME_MESSAGE,
   parts: [{ type: "text", text: WELCOME_MESSAGE }],
 };
