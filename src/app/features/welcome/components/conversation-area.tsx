@@ -1,14 +1,14 @@
 "use client";
-import type { MessageType } from "~/app/lib/session";
 import type { UIMessagePart, UIDataTypes, UITools } from "ai";
 import { Conversation } from "~/components/ai-elements/conversation";
 import { ConversationContent } from "~/components/ai-elements/conversation";
 import { Message } from "~/components/ai-elements/message";
 import { MessageContent } from "~/components/ai-elements/message";
-import { cn } from "~/app/lib/utils";
-import { useConversationContext } from "~/app/contexts/conversation-context";
 import { useAutoScroll } from "../hooks/use-auto-scroll";
 import { UIMessagePartRenderer } from "./ui-message-part-renderer";
+import { MessageType } from "~/lib/session";
+import { cn } from "~/lib/utils";
+import { useConversationContext } from "~/contexts/conversation-context";
 
 interface ConversationAreaProps {
   className: string;
