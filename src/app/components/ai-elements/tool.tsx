@@ -31,16 +31,15 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 
 export type ToolHeaderProps = {
   title?: string;
-  type: ToolUIPart["type"];
-  state: ToolUIPart["state"];
+  type: string;
+  state: string;
   className?: string;
 };
 
-const getStatusBadge = (status: ToolUIPart["state"]) => {
-  const labels: Record<ToolUIPart["state"], string> = {
+const getStatusBadge = (status: string) => {
+  const labels: Record<string, string> = {
     "input-streaming": "Pending",
     "input-available": "Running",
-
     "approval-requested": "Awaiting Approval",
     "approval-responded": "Responded",
     "output-available": "Completed",
@@ -48,7 +47,7 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
     "output-denied": "Denied",
   };
 
-  const icons: Record<ToolUIPart["state"], ReactNode> = {
+  const icons: Record<string, ReactNode> = {
     "input-streaming": <CircleIcon className="size-4" />,
     "input-available": <ClockIcon className="size-4 animate-pulse" />,
     "approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
@@ -60,8 +59,8 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
 
   return (
     <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
-      {icons[status]}
-      {labels[status]}
+      {icons[status] || <CircleIcon className="size-4" />}
+      {labels[status] || status}
     </Badge>
   );
 };
@@ -104,7 +103,7 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
 );
 
 export type ToolInputProps = ComponentProps<"div"> & {
-  input: ToolUIPart["input"];
+  input: unknown;
 };
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
@@ -119,8 +118,8 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
 );
 
 export type ToolOutputProps = ComponentProps<"div"> & {
-  output: ToolUIPart["output"];
-  errorText: ToolUIPart["errorText"];
+  output: unknown;
+  errorText: string;
 };
 
 export const ToolOutput = ({
@@ -141,6 +140,8 @@ export const ToolOutput = ({
     );
   } else if (typeof output === "string") {
     Output = <CodeBlock code={output} language="json" />;
+  } else if (isValidElement(output)) {
+    Output = output;
   }
 
   return (
