@@ -4,9 +4,10 @@ import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
-import { serverTools } from "./agent";
+import { allTools } from "./agent";
 import { buildSystemPrompt } from "./agent/system-prompt";
 import { verifyAuthHeader } from "../auth/jwt-verifier.js";
+import { AgentUIMessage } from "~/lib/message-schema";
 
 const MODEL = "claude-3-5-haiku-latest";
 
@@ -136,7 +137,7 @@ export const handler = awslambda.streamifyResponse(
       // Parse request body
       const body = event.body ? JSON.parse(event.body) : {};
       const { messages: inputMessages } = body as {
-        messages?: Parameters<typeof convertToModelMessages>[0];
+        messages?: AgentUIMessage[];
       };
 
       if (!inputMessages || !Array.isArray(inputMessages)) {
@@ -192,7 +193,7 @@ export const handler = awslambda.streamifyResponse(
         model: anthropic(MODEL),
         system: buildSystemPrompt(),
         messages: modelMessages,
-        tools: serverTools,
+        tools: allTools,
         stopWhen: stepCountIs(5), // Allow up to 5 tool execution loops
       });
 

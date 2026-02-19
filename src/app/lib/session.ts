@@ -1,17 +1,10 @@
 // Session Management Utilities for AI Assistant
 // Handles visitor session tracking and conversation persistence via localStorage
 
+import { AgentUIMessage } from "./message-schema";
+
 const SESSION_ID_KEY = "archil-io-session-id";
 const CONVERSATION_KEY = "archil-io-conversation";
-
-export type MessageType = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  parts: { type: "text"; text: string }[];
-  status?: "pending" | "sent" | "error";
-  error?: string;
-};
 
 /**
  * Get or create a unique session ID for the visitor
@@ -45,7 +38,7 @@ export function getSessionId(): string | null {
 /**
  * Retrieve conversation history from localStorage
  */
-export function getConversationHistory(): MessageType[] {
+export function getConversationHistory(): AgentUIMessage[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -67,7 +60,7 @@ export function getConversationHistory(): MessageType[] {
 /**
  * Save conversation history to localStorage
  */
-export function saveConversationHistory(messages: MessageType[]): void {
+export function saveConversationHistory(messages: AgentUIMessage[]): void {
   if (typeof window === "undefined") {
     return;
   }

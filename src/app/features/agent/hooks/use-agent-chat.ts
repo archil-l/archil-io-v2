@@ -1,35 +1,24 @@
-import { useChat, type UIMessage } from "@ai-sdk/react";
+import { useChat, UseChatHelpers } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useRef, useEffect } from "react";
 import { useThemeContext } from "~/contexts/theme-context";
-import type { SetThemeInput, CopyToClipboardInput } from "../tools/client";
+import type { SetThemeInput } from "../tools/client";
 
-import type { ToolUIPart } from "ai";
+import { AgentUIMessage } from "~/lib/message-schema";
 
 interface UseAgentChatOptions {
-  initialMessages?: UIMessage[];
+  initialMessages?: AgentUIMessage[];
   onThemeChange?: (theme: "light" | "dark") => void;
   onCopySuccess?: (label?: string) => void;
   streamingEndpoint: string;
   token: string;
 }
 
-interface UseAgentChatReturn extends ReturnType<typeof useChat> {
-  isLoading: boolean;
-  toolCalls?: ToolUIPart[];
-}
-
 export const useAgentChat = (
   options: UseAgentChatOptions,
-): UseAgentChatReturn => {
+): UseChatHelpers<AgentUIMessage> => {
   const { theme, toggleTheme } = useThemeContext();
-  const {
-    onThemeChange,
-    onCopySuccess,
-    initialMessages,
-    streamingEndpoint,
-    token,
-  } = options;
+  const { onThemeChange, initialMessages, streamingEndpoint, token } = options;
 
   // Keep theme ref for use in callbacks
   const themeRef = useRef(theme);
@@ -90,51 +79,9 @@ export const useAgentChat = (
           console.log(`[setTheme] Tool execution completed`);
           break;
         }
-
-        case "copyToClipboard": {
-          const input = toolCall.input as CopyToClipboardInput;
-          try {
-            await navigator.clipboard.writeText(input.text);
-            onCopySuccess?.(input.label);
-            chat.addToolOutput({
-              tool: toolName,
-              toolCallId,
-              output: {
-                success: true,
-                message: input.label
-                  ? `Copied ${input.label} to clipboard`
-                  : "Copied to clipboard",
-              },
-            });
-          } catch {
-            chat.addToolOutput({
-              tool: toolName,
-              toolCallId,
-              state: "output-error",
-              errorText: "Failed to copy to clipboard",
-            });
-          }
-          break;
-        }
       }
     },
   });
 
-  // Extract tool calls from messages
-  const toolCalls: ToolUIPart[] = [];
-  for (const msg of chat.messages) {
-    if (msg.parts) {
-      for (const part of msg.parts) {
-        if (part.type === "tool-call" || part.type === "tool-result") {
-          toolCalls.push(part as ToolUIPart);
-        }
-      }
-    }
-  }
-
-  return {
-    ...chat,
-    isLoading: chat.status === "streaming" || chat.status === "submitted",
-    toolCalls,
-  };
+  return chat;
 };

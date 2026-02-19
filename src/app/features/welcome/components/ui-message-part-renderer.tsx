@@ -45,7 +45,6 @@ export function UIMessagePartRenderer({
   part,
   index,
   messageId,
-  isStreaming,
 }: UIMessagePartRendererProps) {
   // Handle text parts
   if (isTextUIPart(part)) {

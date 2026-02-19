@@ -1,4 +1,4 @@
-import { readKnowledge } from "./tools/read-knowledge";
+import { readKnowledge } from "../../../lib/tools/read-knowledge";
 
 export function buildSystemPrompt(): string {
   const about = readKnowledge("about.md");
@@ -13,11 +13,6 @@ ${about}
 
 ## Available Tools
 You have access to tools to retrieve detailed information:
-
-### Server-side tools (use these to fetch data):
-- **getContactInfo**: Get contact details (email, social links, website)
-- **getExperience**: Get work history and career information
-- **getTechnologies**: Get technical skills and technologies used
 
 ### Client-side tools (these run in the user's browser):
 - **setTheme**: Switch between light/dark mode when user requests it
