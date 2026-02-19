@@ -45,6 +45,7 @@ export function UIMessagePartRenderer({
   part,
   index,
   messageId,
+  isStreaming,
 }: UIMessagePartRendererProps) {
   // Handle text parts
   if (isTextUIPart(part)) {
@@ -59,11 +60,10 @@ export function UIMessagePartRenderer({
   // Handle reasoning parts
   if (isReasoningUIPart(part)) {
     const reasoningPart = part as ReasoningUIPart;
-    const isReasoningStreaming = reasoningPart.state === "streaming";
     return (
       <Reasoning
         key={`${messageId}-reasoning-${index}`}
-        isStreaming={isReasoningStreaming}
+        isStreaming={isStreaming}
         defaultOpen={true}
       >
         <ReasoningTrigger />

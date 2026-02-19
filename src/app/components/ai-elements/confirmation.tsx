@@ -1,15 +1,12 @@
 "use client";
 
+import type { ToolUIPart } from "ai";
+import type { ComponentProps, ReactNode } from "react";
+
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import type { ToolUIPart } from "ai";
-import {
-  type ComponentProps,
-  createContext,
-  type ReactNode,
-  useContext,
-} from "react";
+import { createContext, useContext } from "react";
 
 type ToolUIPartApproval =
   | {
@@ -39,13 +36,13 @@ type ToolUIPartApproval =
     }
   | undefined;
 
-type ConfirmationContextValue = {
+interface ConfirmationContextValue {
   approval: ToolUIPartApproval;
   state: ToolUIPart["state"];
-};
+}
 
 const ConfirmationContext = createContext<ConfirmationContextValue | null>(
-  null,
+  null
 );
 
 const useConfirmation = () => {
@@ -89,15 +86,14 @@ export const ConfirmationTitle = ({
   <AlertDescription className={cn("inline", className)} {...props} />
 );
 
-export type ConfirmationRequestProps = {
+export interface ConfirmationRequestProps {
   children?: ReactNode;
-};
+}
 
 export const ConfirmationRequest = ({ children }: ConfirmationRequestProps) => {
   const { state } = useConfirmation();
 
   // Only show when approval is requested
-
   if (state !== "approval-requested") {
     return null;
   }
@@ -105,9 +101,9 @@ export const ConfirmationRequest = ({ children }: ConfirmationRequestProps) => {
   return children;
 };
 
-export type ConfirmationAcceptedProps = {
+export interface ConfirmationAcceptedProps {
   children?: ReactNode;
-};
+}
 
 export const ConfirmationAccepted = ({
   children,
@@ -127,9 +123,9 @@ export const ConfirmationAccepted = ({
   return children;
 };
 
-export type ConfirmationRejectedProps = {
+export interface ConfirmationRejectedProps {
   children?: ReactNode;
-};
+}
 
 export const ConfirmationRejected = ({
   children,
@@ -158,7 +154,6 @@ export const ConfirmationActions = ({
   const { state } = useConfirmation();
 
   // Only show when approval is requested
-
   if (state !== "approval-requested") {
     return null;
   }
