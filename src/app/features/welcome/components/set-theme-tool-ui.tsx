@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { DynamicToolUIPart } from "ai";
 import { ThemeSwitcher } from "~/components/ai-elements/theme-switcher";
 import { useTheme } from "~/hooks/use-theme";
@@ -12,32 +11,22 @@ export interface ToggleThemeToolUIProps {
 /**
  * ToggleThemeToolUI - Dynamic UI component for the toggleTheme tool
  *
- * When AI calls toggleTheme tool:
- * 1. Extract result from tool output
- * 2. Call toggleTheme() hook to actually switch theme
- * 3. Display animated feedback via ThemeSwitcher
- * 4. ThemeProvider applies DOM updates automatically
+ * Renders the ThemeSwitcher immediately when the tool is called.
+ * The actual theme toggle is handled by useAgentChat's onToolCall handler.
+ * This component just displays the animated feedback.
  */
 export function ToggleThemeToolUI({ tool }: ToggleThemeToolUIProps) {
-  const { theme, toggleTheme } = useTheme();
-  const [toggled, setToggled] = useState(false);
+  const { theme } = useTheme();
 
-  useEffect(() => {
-    const output = tool.output as Record<string, unknown> | null;
-    if (output?.toggled && !toggled) {
-      // Actually toggle the theme when tool output arrives
-      toggleTheme();
-      setToggled(true);
-    }
-  }, [tool.output, toggled, toggleTheme]);
+  // Get the state to determine if we're still running or completed
+  const state = tool.state || "input-available";
+  const isCompleted = state === "output-available" || state === "output-error";
 
-  if (!toggled) {
-    return null;
-  }
-
+  // Always render the theme switcher - it shows the current theme state
+  // The animation indicates the toggle is happening
   return (
-    <div className="flex justify-center">
-      <ThemeSwitcher targetTheme={theme} isAnimating={true} />
+    <div className="flex justify-center py-4">
+      <ThemeSwitcher targetTheme={theme} isAnimating={!isCompleted} />
     </div>
   );
 }

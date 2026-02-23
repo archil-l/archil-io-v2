@@ -81,10 +81,10 @@ export function UIMessagePartRenderer({
     const hasOutput = state === "output-available" || state === "output-error";
 
     // Handle dynamic tool UIs for specific tools
+    // Render toggleTheme UI immediately (during input-available state, not just after output)
     if (
       toolPart.type === "dynamic-tool" &&
-      (toolPart as DynamicToolUIPart).toolName === "toggleTheme" &&
-      hasOutput
+      (toolPart as DynamicToolUIPart).toolName === "toggleTheme"
     ) {
       return (
         <ToggleThemeToolUI

@@ -2,7 +2,6 @@ import { useChat, UseChatHelpers } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useRef, useEffect } from "react";
 import { useThemeContext } from "~/contexts/theme-context";
-import type { SetThemeInput } from "../tools/client";
 
 import { AgentUIMessage } from "~/lib/message-schema";
 
@@ -42,41 +41,25 @@ export const useAgentChat = (
       const toolCallId = toolCall.toolCallId;
 
       switch (toolName) {
-        case "setTheme": {
-          const input = toolCall.input as SetThemeInput;
-          let newTheme: "light" | "dark";
+        case "toggleTheme": {
+          // Toggle the theme
+          const previousTheme = themeRef.current;
+          const newTheme = previousTheme === "light" ? "dark" : "light";
 
-          console.log(`[setTheme] Tool called with input:`, input);
-          console.log(`[setTheme] Current theme in ref: ${themeRef.current}`);
+          console.log(
+            `[toggleTheme] Toggling from ${previousTheme} to ${newTheme}`,
+          );
+          toggleTheme();
 
-          if (input.theme === "toggle") {
-            newTheme = themeRef.current === "light" ? "dark" : "light";
-            console.log(`[setTheme] Toggling theme to: ${newTheme}`);
-            toggleTheme();
-          } else {
-            newTheme = input.theme;
-            console.log(`[setTheme] Setting theme to: ${newTheme}`);
-            if (newTheme !== themeRef.current) {
-              console.log(`[setTheme] Calling toggleTheme()`);
-              toggleTheme();
-            } else {
-              console.log(
-                `[setTheme] Theme already ${newTheme}, skipping toggle`,
-              );
-            }
-          }
-
-          console.log(`[setTheme] Final theme: ${newTheme}`);
           onThemeChange?.(newTheme);
 
-          // Add tool output with the result
-          console.log(`[setTheme] Adding tool output with theme: ${newTheme}`);
+          // Add tool output to complete the tool call
           chat.addToolOutput({
             tool: toolName,
             toolCallId,
-            output: { success: true, currentTheme: newTheme },
+            output: { toggled: true, previousTheme, newTheme },
           });
-          console.log(`[setTheme] Tool execution completed`);
+          console.log(`[toggleTheme] Tool execution completed`);
           break;
         }
       }
