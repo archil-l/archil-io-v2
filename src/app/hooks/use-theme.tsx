@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import z from "zod";
+import { themeSchema } from "~/lib/tools/client-side-tools";
 
-export type Theme = "light" | "dark";
+export type Theme = z.infer<typeof themeSchema>;
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>("dark");

@@ -33,7 +33,21 @@ import {
   ToolInput,
   ToolOutput,
 } from "~/components/ai-elements/tool";
-import { ToggleThemeToolUI } from "./set-theme-tool-ui";
+import { ToggleThemeToolUI } from "../../../lib/tools/toggle-theme/toggle-theme-tool-ui";
+import { Theme } from "~/hooks/use-theme";
+import { ThemeToggleOutputType } from "~/lib/tools/client-side-tools";
+
+// Helper to extract tool name from tool part
+function getToolName(toolPart: ToolUIPart | DynamicToolUIPart): string | null {
+  if (toolPart.type === "dynamic-tool") {
+    return (toolPart as DynamicToolUIPart).toolName;
+  }
+  // For static tools, the type is "tool-<toolName>"
+  if (toolPart.type.startsWith("tool-")) {
+    return toolPart.type.slice(5);
+  }
+  return null;
+}
 
 interface UIMessagePartRendererProps {
   part: UIMessagePart<UIDataTypes, UITools>;
@@ -80,16 +94,17 @@ export function UIMessagePartRenderer({
     const toolIsStreaming = state === "input-streaming";
     const hasOutput = state === "output-available" || state === "output-error";
 
-    // Handle dynamic tool UIs for specific tools
+    // Handle custom tool UIs for specific tools
+    // Extract tool name from either dynamic or static tool parts
+    const toolName = getToolName(toolPart);
+
     // Render toggleTheme UI immediately (during input-available state, not just after output)
-    if (
-      toolPart.type === "dynamic-tool" &&
-      (toolPart as DynamicToolUIPart).toolName === "toggleTheme"
-    ) {
+    if (toolName === "toggleTheme") {
       return (
         <ToggleThemeToolUI
           key={`${messageId}-tool-${index}`}
           tool={toolPart as DynamicToolUIPart}
+          theme={(toolPart?.output as ThemeToggleOutputType)?.newTheme}
         />
       );
     }
@@ -195,17 +210,6 @@ export function UIMessagePartRenderer({
           )}
         </div>
       </div>
-    );
-  }
-
-  // Handle step-start parts
-  if ("type" in part && part.type === "step-start") {
-    const stepPart = part as StepStartUIPart;
-    return (
-      <div
-        key={`${messageId}-step-${index}`}
-        className="my-4 border-t border-muted"
-      />
     );
   }
 
