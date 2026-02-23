@@ -33,6 +33,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "~/components/ai-elements/tool";
+import { ToggleThemeToolUI } from "./set-theme-tool-ui";
 
 interface UIMessagePartRendererProps {
   part: UIMessagePart<UIDataTypes, UITools>;
@@ -78,6 +79,20 @@ export function UIMessagePartRenderer({
     const state = toolPart.state || "input-available";
     const toolIsStreaming = state === "input-streaming";
     const hasOutput = state === "output-available" || state === "output-error";
+
+    // Handle dynamic tool UIs for specific tools
+    if (
+      toolPart.type === "dynamic-tool" &&
+      (toolPart as DynamicToolUIPart).toolName === "toggleTheme" &&
+      hasOutput
+    ) {
+      return (
+        <ToggleThemeToolUI
+          key={`${messageId}-tool-${index}`}
+          tool={toolPart as DynamicToolUIPart}
+        />
+      );
+    }
 
     const toolHeaderProps =
       toolPart.type === "dynamic-tool"

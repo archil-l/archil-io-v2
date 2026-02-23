@@ -1,8 +1,14 @@
 import { tool } from "ai";
 import z from "zod";
 
-export const setThemeTool = tool({
+/**
+ * toggleThemeTool - Toggle between light and dark theme
+ *
+ * This is a CLIENT-SIDE ONLY tool. NO execute function.
+ * The actual theme toggle happens in ToggleThemeToolUI component on the client.
+ */
+export const toggleThemeTool = tool({
   description:
-    "Get contact information including email, social links, and website. Use this when the user asks how to contact, reach out, or connect.",
+    "Toggle the website theme between light and dark mode. Call this when the user asks to change the theme, switch appearance, or toggle between modes.",
   inputSchema: z.object({}),
 });

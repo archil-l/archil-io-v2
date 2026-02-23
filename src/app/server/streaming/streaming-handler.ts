@@ -9,7 +9,7 @@ import { buildSystemPrompt } from "./agent/system-prompt";
 import { verifyAuthHeader } from "../auth/jwt-verifier.js";
 import { AgentUIMessage } from "~/lib/message-schema";
 
-const MODEL = "claude-3-5-haiku-latest";
+const MODEL = "claude-haiku-4-5-20251001";
 
 // Secrets Manager client for JWT secret retrieval
 const secretsClient = new SecretsManagerClient({
