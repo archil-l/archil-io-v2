@@ -19,14 +19,6 @@ export const useAgentChat = (
   const { theme, toggleTheme } = useThemeContext();
   const { initialMessages, streamingEndpoint, token } = options;
 
-  // Keep theme ref for use in callbacks
-  const themeRef = useRef(theme);
-
-  // Keep theme ref updated
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
-
   // Build transport config with streaming endpoint and JWT token
   const transportConfig = {
     api: streamingEndpoint,
@@ -43,7 +35,7 @@ export const useAgentChat = (
       switch (toolName) {
         case "toggleTheme": {
           // Toggle the theme
-          const previousTheme = themeRef.current;
+          const previousTheme = theme;
           const newTheme = previousTheme === "light" ? "dark" : "light";
           toggleTheme();
 
