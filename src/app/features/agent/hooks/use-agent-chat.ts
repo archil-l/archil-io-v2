@@ -17,7 +17,7 @@ export const useAgentChat = (
   options: UseAgentChatOptions,
 ): UseChatHelpers<AgentUIMessage> => {
   const { theme, toggleTheme } = useThemeContext();
-  const { onThemeChange, initialMessages, streamingEndpoint, token } = options;
+  const { initialMessages, streamingEndpoint, token } = options;
 
   // Keep theme ref for use in callbacks
   const themeRef = useRef(theme);
@@ -45,13 +45,7 @@ export const useAgentChat = (
           // Toggle the theme
           const previousTheme = themeRef.current;
           const newTheme = previousTheme === "light" ? "dark" : "light";
-
-          console.log(
-            `[toggleTheme] Toggling from ${previousTheme} to ${newTheme}`,
-          );
           toggleTheme();
-
-          onThemeChange?.(newTheme);
 
           // Add tool output to complete the tool call
           chat.addToolOutput({
