@@ -1,1 +1,1 @@
-export { useAgentChat } from "./hooks";
+export { useAgentChat, useClientToolHandlers } from "./hooks";

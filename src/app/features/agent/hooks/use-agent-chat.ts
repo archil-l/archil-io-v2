@@ -1,23 +1,20 @@
 import { useChat, UseChatHelpers } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useRef, useEffect } from "react";
-import { useThemeContext } from "~/contexts/theme-context";
 
 import { AgentUIMessage } from "~/lib/message-schema";
+import { ClientToolHandlers } from "./use-client-tool-handlers";
 
 interface UseAgentChatOptions {
   initialMessages?: AgentUIMessage[];
-  onThemeChange?: (theme: "light" | "dark") => void;
-  onCopySuccess?: (label?: string) => void;
   streamingEndpoint: string;
   token: string;
+  toolHandlers: ClientToolHandlers;
 }
 
 export const useAgentChat = (
   options: UseAgentChatOptions,
 ): UseChatHelpers<AgentUIMessage> => {
-  const { theme, toggleTheme } = useThemeContext();
-  const { initialMessages, streamingEndpoint, token } = options;
+  const { initialMessages, streamingEndpoint, token, toolHandlers } = options;
 
   // Build transport config with streaming endpoint and JWT token
   const transportConfig = {
@@ -32,22 +29,12 @@ export const useAgentChat = (
       const toolName = toolCall.toolName;
       const toolCallId = toolCall.toolCallId;
 
-      switch (toolName) {
-        case "toggleTheme": {
-          // Toggle the theme
-          const previousTheme = theme;
-          const newTheme = previousTheme === "light" ? "dark" : "light";
-          toggleTheme();
-
-          // Add tool output to complete the tool call
-          chat.addToolOutput({
-            tool: toolName,
-            toolCallId,
-            output: { toggled: true, previousTheme, newTheme },
-          });
-          console.log(`[toggleTheme] Tool execution completed`);
-          break;
-        }
+      // Look up the handler dynamically
+      const handler = toolHandlers[toolName];
+      if (handler) {
+        await handler(toolCallId, chat.addToolOutput);
+      } else {
+        console.warn(`[useAgentChat] No handler found for tool: ${toolName}`);
       }
     },
   });

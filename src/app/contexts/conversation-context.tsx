@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useCallback } from "react";
 import { saveConversationHistory, clearConversation } from "~/lib/session";
-import { useAgentChat } from "~/features/agent";
+import { useAgentChat, useClientToolHandlers } from "~/features/agent";
 import { useToken } from "~/hooks/use-token";
 import { INITIAL_WELCOME_MESSAGE } from "~/features/welcome/constants";
 import { AgentUIMessage } from "~/lib/message-schema";
@@ -64,12 +64,14 @@ function ConversationProviderInner({
   streamingEndpoint,
   token,
 }: ConversationProviderInnerProps) {
-  // Convert initial messages to AI SDK format
+  // Get client-side tool handlers
+  const toolHandlers = useClientToolHandlers();
 
   const { messages, sendMessage, setMessages, error, status } = useAgentChat({
     initialMessages,
     streamingEndpoint,
     token,
+    toolHandlers,
   });
 
   // Save conversation to localStorage whenever messages change (after initial load)
