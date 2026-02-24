@@ -9,7 +9,6 @@ import type {
   FileUIPart,
   SourceUrlUIPart,
   SourceDocumentUIPart,
-  StepStartUIPart,
   DataUIPart,
   UIDataTypes,
   UITools,
@@ -34,8 +33,12 @@ import {
   ToolOutput,
 } from "~/components/ai-elements/tool";
 import { ToggleThemeToolUI } from "../../../lib/tools/toggle-theme/toggle-theme-tool-ui";
+import { CheckThemeToolUI } from "../../../lib/tools/check-theme/check-theme-tool-ui";
 import { Theme } from "~/hooks/use-theme";
-import { ThemeToggleOutputType } from "~/lib/tools/client-side-tools";
+import {
+  ThemeToggleOutputType,
+  ThemeCheckOutputType,
+} from "~/lib/tools/client-side-tools";
 
 // Helper to extract tool name from tool part
 function getToolName(toolPart: ToolUIPart | DynamicToolUIPart): string | null {
@@ -105,6 +108,17 @@ export function UIMessagePartRenderer({
           key={`${messageId}-tool-${index}`}
           tool={toolPart as DynamicToolUIPart}
           theme={(toolPart?.output as ThemeToggleOutputType)?.newTheme}
+        />
+      );
+    }
+
+    // Render checkTheme UI
+    if (toolName === "checkTheme") {
+      return (
+        <CheckThemeToolUI
+          key={`${messageId}-tool-${index}`}
+          tool={toolPart as DynamicToolUIPart}
+          theme={(toolPart?.output as ThemeCheckOutputType)?.currentTheme}
         />
       );
     }

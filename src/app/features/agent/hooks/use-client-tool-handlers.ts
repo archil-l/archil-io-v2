@@ -1,5 +1,6 @@
 import { useThemeContext } from "~/contexts/theme-context";
 import { createToggleThemeHandler } from "~/lib/tools/toggle-theme";
+import { createCheckThemeHandler } from "~/lib/tools/check-theme";
 
 /**
  * Generic tool handler type for client-side tools.
@@ -25,6 +26,7 @@ export function useClientToolHandlers(): ClientToolHandlers {
 
   return {
     toggleTheme: createToggleThemeHandler(theme, toggleTheme),
+    checkTheme: createCheckThemeHandler(theme),
     // Add more client-side tool handlers here as needed:
     // copyToClipboard: createCopyToClipboardHandler(...),
     // playSound: createPlaySoundHandler(...),
