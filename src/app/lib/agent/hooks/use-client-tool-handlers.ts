@@ -1,6 +1,6 @@
 import { useThemeContext } from "~/contexts/theme-context";
-import { createToggleThemeHandler } from "~/lib/tools/toggle-theme";
-import { createCheckThemeHandler } from "~/lib/tools/check-theme";
+import { createToggleThemeHandler } from "~/lib/agent/tools/toggle-theme";
+import { createCheckThemeHandler } from "~/lib/agent/tools/check-theme";
 
 /**
  * Generic tool handler type for client-side tools.

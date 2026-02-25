@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import z from "zod";
-import { themeSchema } from "~/lib/tools/client-side-tools";
+import { themeSchema } from "~/lib/agent/tools/client-side-tools";
 
 export type Theme = z.infer<typeof themeSchema>;
 

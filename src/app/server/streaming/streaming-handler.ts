@@ -4,10 +4,10 @@ import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
-import { allTools } from "./agent";
-import { buildSystemPrompt } from "./agent/system-prompt";
 import { verifyAuthHeader } from "../auth/jwt-verifier.js";
 import { AgentUIMessage } from "~/lib/message-schema";
+import { buildSystemPrompt } from "~/lib/agent/system-prompt.js";
+import { allTools } from "~/lib/agent/tools/index.js";
 
 const MODEL = "claude-haiku-4-5-20251001";
 

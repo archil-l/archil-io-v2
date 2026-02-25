@@ -1,6 +1,6 @@
 import { InferUITools, UIMessage, UIMessagePart } from "ai";
 import z from "zod";
-import { allTools } from "./tools";
+import { allTools } from "./agent/tools";
 
 export const metadataSchema = z.object({
   timestamp: z.iso.datetime().optional(),

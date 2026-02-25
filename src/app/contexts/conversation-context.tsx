@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useCallback } from "react";
 import { saveConversationHistory, clearConversation } from "~/lib/session";
-import { useAgentChat, useClientToolHandlers } from "~/features/agent";
 import { useToken } from "~/hooks/use-token";
 import { INITIAL_WELCOME_MESSAGE } from "~/features/welcome/constants";
 import { AgentUIMessage } from "~/lib/message-schema";
+import { useAgentChat, useClientToolHandlers } from "~/lib/agent/hooks";
 
 interface ConversationProviderProps {
   children: React.ReactNode;
