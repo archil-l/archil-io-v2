@@ -1,8 +1,10 @@
-export const WELCOME_MESSAGE = `# Welcome! 🖖🏻 \n\n
+export const WELCOME_MESSAGE = `# Welcome! 🖖
 
-My name is Archil Lelashvili, I am a software engineer building dynamic, semantic, accessible, and user-friendly web applications.
+I'm a software engineer at Amazon Robotics, building agentic AI systems, full-stack web applications and more. When I'm not coding, I'm trying to tinkering with something... 
 
-Welcome to my personal page. I'm excited to share my work, projects, and insights into my journey in web development. Glad to have you here!
+Welcome to my personal page! I'm excited to share my work, projects, and insights into my engineering journey. Glad to have you here!
+
+My AI assistant is here to chat - just ask :)
 `;
 
 import { Briefcase, Code, Mail, type LucideIcon } from "lucide-react";
