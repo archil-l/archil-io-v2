@@ -34,6 +34,7 @@ import {
 } from "~/components/ai-elements/tool";
 import { ToggleThemeToolUI } from "../../../lib/agent/tools/toggle-theme/toggle-theme-tool-ui";
 import { CheckThemeToolUI } from "../../../lib/agent/tools/check-theme/check-theme-tool-ui";
+import { WebPreviewToolUI } from "../../../lib/agent/tools/webpreview/webpreview-tool-ui";
 import { Theme } from "~/hooks/use-theme";
 import {
   ThemeToggleOutputType,
@@ -119,6 +120,22 @@ export function UIMessagePartRenderer({
           key={`${messageId}-tool-${index}`}
           tool={toolPart as DynamicToolUIPart}
           theme={(toolPart?.output as ThemeCheckOutputType)?.currentTheme}
+        />
+      );
+    }
+
+    // Render webpreview UI
+    if (toolName === "webpreview") {
+      const input = (toolPart as DynamicToolUIPart).input;
+      const url =
+        input && typeof input === "object" && "url" in input
+          ? (input as any).url
+          : "";
+      return (
+        <WebPreviewToolUI
+          key={`${messageId}-tool-${index}`}
+          tool={toolPart as DynamicToolUIPart}
+          url={url}
         />
       );
     }
