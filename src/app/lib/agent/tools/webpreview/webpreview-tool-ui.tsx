@@ -24,7 +24,6 @@ export function WebPreviewToolUI({
   className,
 }: WebPreviewToolUIProps) {
   const state = tool.state || "input-available";
-  const isCompleted = state === "output-available" || state === "output-error";
   const isRunning = state === "input-available" || state === "input-streaming";
 
   return (
