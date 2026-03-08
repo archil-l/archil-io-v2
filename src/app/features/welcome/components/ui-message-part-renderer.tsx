@@ -38,12 +38,7 @@ import {
   ThemeToggleOutputType,
   ThemeCheckOutputType,
 } from "~/lib/agent/tools/client-side-tools";
-import {
-  WebPreview,
-  WebPreviewNavigation,
-  WebPreviewUrl,
-  WebPreviewBody,
-} from "~/components/ai-elements/web-preview";
+import { WebPreviewToolUI } from "~/lib/agent/tools/web-preview";
 
 // Helper to extract tool name from tool part
 function getToolName(toolPart: ToolUIPart | DynamicToolUIPart): string | null {
@@ -136,16 +131,11 @@ export function UIMessagePartRenderer({
           ? (input as any).url
           : "";
       return (
-        <WebPreview
+        <WebPreviewToolUI
           key={`${messageId}-tool-${index}`}
-          defaultUrl={url}
-          className="h-[400px] w-full"
-        >
-          <WebPreviewNavigation>
-            <WebPreviewUrl />
-          </WebPreviewNavigation>
-          <WebPreviewBody />
-        </WebPreview>
+          tool={toolPart as DynamicToolUIPart}
+          url={url}
+        />
       );
     }
 
