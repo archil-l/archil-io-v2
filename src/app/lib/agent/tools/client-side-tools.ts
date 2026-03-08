@@ -40,14 +40,6 @@ export const checkThemeTool = tool({
   outputSchema: themeCheckOutput,
 });
 
-export const webPreviewTool = tool({
-  description:
-    "Open a web preview of a specified URL. Call this when the user asks to view a website, open a link, or preview web content.",
-  inputSchema: z.object({
-    url: z.url("Please provide a valid URL"),
-  }),
-});
-
 // Show Resume Tool
 export const showResumeTool = tool({
   description:
