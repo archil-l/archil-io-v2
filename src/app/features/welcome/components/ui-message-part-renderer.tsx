@@ -39,6 +39,7 @@ import {
   ThemeCheckOutputType,
 } from "~/lib/agent/tools/client-side-tools";
 import { WebPreviewToolUI } from "~/lib/agent/tools/web-preview";
+import { ShowResumeToolUI } from "~/lib/agent/tools/show-resume";
 
 // Helper to extract tool name from tool part
 function getToolName(toolPart: ToolUIPart | DynamicToolUIPart): string | null {
@@ -135,6 +136,16 @@ export function UIMessagePartRenderer({
           key={`${messageId}-tool-${index}`}
           tool={toolPart as DynamicToolUIPart}
           url={url}
+        />
+      );
+    }
+
+    // Render showResume UI
+    if (toolName === "showResume") {
+      return (
+        <ShowResumeToolUI
+          key={`${messageId}-tool-${index}`}
+          tool={toolPart as DynamicToolUIPart}
         />
       );
     }

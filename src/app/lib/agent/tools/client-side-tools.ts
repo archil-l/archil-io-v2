@@ -47,3 +47,10 @@ export const webPreviewTool = tool({
     url: z.url("Please provide a valid URL"),
   }),
 });
+
+// Show Resume Tool
+export const showResumeTool = tool({
+  description:
+    "Display Archil Lelashvili's resume. Call this when the user asks to see the resume, view CV, or wants to know about professional experience and qualifications.",
+  inputSchema: z.object({}),
+});
