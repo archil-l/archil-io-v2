@@ -74,7 +74,7 @@ export function InputArea() {
       <PromptInput onSubmit={handleSubmit} className="w-full relative">
         <PromptInputTextarea
           value={input}
-          placeholder="Ask me anything..."
+          placeholder="Ask anything"
           onChange={(e) => setInput(e.currentTarget.value)}
           className="pr-12 bg-background dark:bg-background transition duration-300"
           disabled={!captchaVerified && !!siteKey}

@@ -1,10 +1,10 @@
-export const WELCOME_MESSAGE = `# Welcome! 🖖
+export const WELCOME_MESSAGE = `# Hi there! 🖖🏻
 
-I'm a software engineer at Amazon Robotics, building agentic AI systems, full-stack web applications and more. When I'm not coding, I'm trying to tinkering with something... 
+My name is Archil Lelashvili - I'm a software engineer at Amazon Robotics, building agentic AI systems, full-stack web applications and more. 
 
 Welcome to my personal page! I'm excited to share my work, projects, and insights into my engineering journey. Glad to have you here!
 
-My AI assistant is here to chat - just ask :)
+This page is powered by an AI assistant, you can ask any questions :)
 `;
 
 import { Briefcase, Code, Mail, type LucideIcon } from "lucide-react";
@@ -18,17 +18,17 @@ export interface SuggestionPrompt {
 
 export const PREDEFINED_PROMPTS: SuggestionPrompt[] = [
   {
-    text: "Tell me about your experience",
+    text: "Tell me about Archil's experience",
     icon: Briefcase,
     iconColor: "text-blue-500",
   },
   {
-    text: "What technologies do you work with?",
+    text: "How is this page is built?",
     icon: Code,
     iconColor: "text-green-500",
   },
   {
-    text: "How can I contact you?",
+    text: "I want to contact Archil",
     icon: Mail,
     iconColor: "text-purple-500",
   },
