@@ -23,7 +23,7 @@ export interface WebPreviewToolUIProps {
   url: string;
   className?: string;
   editUrl?: boolean;
-  showNavigationButtons: boolean;
+  showNavigationButtons?: boolean;
   showConsole?: boolean;
   title?: string;
 }
