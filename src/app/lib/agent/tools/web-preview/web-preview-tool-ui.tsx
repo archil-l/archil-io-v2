@@ -157,7 +157,7 @@ export function WebPreviewToolUI({
       defaultUrl={currentUrl}
       onUrlChange={handleUrlChange}
       className={className}
-      style={{ height: "400px" }}
+      style={{ height: "800px", minWidth: "750px" }}
       data-web-preview-container
     >
       <WebPreviewNavigation>
