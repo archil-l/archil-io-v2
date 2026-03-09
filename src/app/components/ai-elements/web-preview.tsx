@@ -217,7 +217,6 @@ export type WebPreviewConsoleProps = ComponentProps<"div"> & {
     message: string;
     timestamp: Date;
   }[];
-  noButton?: boolean;
 };
 
 export const WebPreviewConsole = ({
@@ -226,7 +225,6 @@ export const WebPreviewConsole = ({
   children,
   ...props
 }: WebPreviewConsoleProps) => {
-  const { noButton } = props || {};
   const { consoleOpen, setConsoleOpen } = useWebPreview();
 
   return (
@@ -241,14 +239,12 @@ export const WebPreviewConsole = ({
           className="flex w-full items-center justify-between p-3 text-left text-xs font-medium hover:bg-muted/50"
           variant="ghost"
         >
-          {noButton && (
-            <ChevronDownIcon
-              className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                consoleOpen && "rotate-180",
-              )}
-            />
-          )}
+          <ChevronDownIcon
+            className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              consoleOpen && "rotate-180",
+            )}
+          />
         </Button>
       </CollapsibleTrigger>
 

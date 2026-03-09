@@ -31,7 +31,7 @@ export function useClientToolHandlers(): ClientToolHandlers {
   return {
     toggleTheme: createToggleThemeHandler(theme, toggleTheme),
     checkTheme: createCheckThemeHandler(theme),
-    showResume: createShowResumeHandler(),
+    showResume: createShowResumeHandler,
     // Add more client-side tool handlers here as needed:
     // copyToClipboard: createCopyToClipboardHandler(...),
     // playSound: createPlaySoundHandler(...),

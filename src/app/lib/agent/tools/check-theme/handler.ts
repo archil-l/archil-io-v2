@@ -1,3 +1,5 @@
+"use client";
+
 import { Theme } from "~/hooks/use-theme";
 import { AddToolOutputFn } from "~/lib/agent/hooks/use-client-tool-handlers";
 
@@ -6,16 +8,12 @@ import { AddToolOutputFn } from "~/lib/agent/hooks/use-client-tool-handlers";
  * This handler reads the current theme and reports it without toggling.
  */
 export function createCheckThemeHandler(theme: Theme) {
-  return async (toolCallId: string, addToolOutput: AddToolOutputFn) => {
-    await addToolOutput({
+  return async function (toolCallId: string, addToolOutput: AddToolOutputFn) {
+    addToolOutput({
       state: "output-available",
       tool: "checkTheme",
       toolCallId,
       output: { currentTheme: theme },
     });
-
-    console.log(
-      `[checkTheme] Tool execution completed - current theme: ${theme}`,
-    );
   };
 }

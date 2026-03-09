@@ -215,7 +215,7 @@ export function WebPreviewToolUI({
 
       <WebPreviewBody src={currentUrl} />
 
-      <WebPreviewConsole logs={logs} noButton={showConsole} />
+      <WebPreviewConsole logs={logs} />
     </WebPreview>
   );
 }

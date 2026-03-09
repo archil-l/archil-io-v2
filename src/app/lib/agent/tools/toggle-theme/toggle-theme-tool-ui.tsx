@@ -33,7 +33,7 @@ export function ToggleThemeToolUI({
   // Always render the theme switcher - it shows the current theme state
   // The animation indicates the toggle is happening
   return (
-    <div className="flex justify-center py-4">
+    <div className="flex py-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

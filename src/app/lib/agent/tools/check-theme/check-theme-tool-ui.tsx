@@ -29,7 +29,7 @@ export function CheckThemeToolUI({
   const isLight = theme === "light";
 
   return (
-    <div className="flex justify-center py-4">
+    <div className="flex py-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -40,16 +40,6 @@ export function CheckThemeToolUI({
           className,
         )}
       >
-        {/* Eye icon to indicate "checking" */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-          className="flex items-center justify-center rounded-full bg-primary/10 p-1.5"
-        >
-          <Eye className="size-4 text-primary" />
-        </motion.div>
-
         {/* Theme icon with animation */}
         <motion.div
           initial={{ rotate: -180, opacity: 0 }}

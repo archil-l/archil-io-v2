@@ -1,3 +1,5 @@
+"use client";
+
 import { Theme } from "~/hooks/use-theme";
 import { AddToolOutputFn } from "~/lib/agent/hooks/use-client-tool-handlers";
 
@@ -14,7 +16,7 @@ export function createToggleThemeHandler(
     const newTheme = previousTheme === "light" ? "dark" : "light";
     toggleTheme();
 
-    await addToolOutput({
+    addToolOutput({
       state: "output-available",
       tool: "toggleTheme",
       toolCallId,

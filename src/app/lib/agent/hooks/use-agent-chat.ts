@@ -1,5 +1,10 @@
+"use client";
+
 import { useChat, UseChatHelpers } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 
 import { AgentUIMessage } from "~/lib/message-schema";
 import { ClientToolHandlers } from "./use-client-tool-handlers";
@@ -25,7 +30,12 @@ export const useAgentChat = (
   const chat = useChat({
     transport: new DefaultChatTransport(transportConfig),
     messages: initialMessages,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onToolCall: async ({ toolCall }) => {
+      if (toolCall.dynamic) {
+        return;
+      }
+
       const toolName = toolCall.toolName;
       const toolCallId = toolCall.toolCallId;
 
