@@ -107,7 +107,7 @@ class JWTService {
     const expiresIn = this.expiryHours * 3600; // Convert hours to seconds
 
     const payload: JWTPayload = {
-      iss: "archil-io-v2",
+      iss: "ask-archil-io",
       sub: "app",
       iat: now,
       exp: now + expiresIn,

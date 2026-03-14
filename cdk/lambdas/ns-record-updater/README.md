@@ -88,7 +88,7 @@ interface UpdateNsRecordsEvent {
   childHostedZoneId: string; // Zone ID of child account's zone
   parentHostedZoneId: string; // Zone ID of parent account's root zone
   delegationRoleArn: string; // ARN of delegation role in parent account
-  subdomain: string; // Subdomain FQDN (e.g., agent.archil.io)
+  subdomain: string; // Subdomain FQDN (e.g., ask.archil.io)
 }
 ```
 
@@ -114,7 +114,7 @@ Common error scenarios:
 The Lambda is deployed as part of the SubdomainStack:
 
 ```bash
-cd /path/to/archil-io-v2
+cd /path/to/ask-archil-io
 npm install
 npx cdk deploy
 ```
@@ -140,7 +140,7 @@ const event = {
   parentHostedZoneId: "Z0987654321ZYX",
   delegationRoleArn:
     "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
-  subdomain: "agent.archil.io",
+  subdomain: "ask.archil.io",
 };
 
 handler(event)

@@ -1,6 +1,6 @@
-# Custom Domain Setup: agent.archil.io
+# Custom Domain Setup: ask.archil.io
 
-This document outlines the implementation plan for adding `agent.archil.io` as a custom domain for the archil-io-v2 web application.
+This document outlines the implementation plan for adding `ask.archil.io` as a custom domain for the ask-archil-io web application.
 
 ## Architecture Overview
 
@@ -10,13 +10,13 @@ This document outlines the implementation plan for adding `agent.archil.io` as a
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │  Route 53 Hosted Zones:                                               │  │
 │  │  - archil.io (root zone)                                              │  │
-│  │  - agent.archil.io (delegated zone) - ID: Z052085530KX1PT8QCFKR       │  │
+│  │  - ask.archil.io (delegated zone) - ID: Z052085530KX1PT8QCFKR       │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 │                                                                             │
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │  IAM Role: agent-dns-management-role                                  │  │
 │  │  Trust: Account 260448775808 can assume this role                     │  │
-│  │  Permissions: Manage DNS records in agent.archil.io zone              │  │
+│  │  Permissions: Manage DNS records in ask.archil.io zone              │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 │                                      │                                      │
 │                                      ▼                                      │
@@ -25,7 +25,7 @@ This document outlines the implementation plan for adding `agent.archil.io` as a
 │              │                                           │                  │
 │              │  ┌─────────────────────────────────────┐  │                  │
 │              │  │  CloudFront Distribution            │  │                  │
-│              │  │  - Custom domain: agent.archil.io   │  │                  │
+│              │  │  - Custom domain: ask.archil.io   │  │                  │
 │              │  │  - ACM Certificate (DNS validated)  │  │                  │
 │              │  └─────────────────────────────────────┘  │                  │
 │              │                    │                      │                  │
@@ -46,7 +46,7 @@ The following resources already exist (deployed via `ns-records-archil-io` proje
 | ----------------------- | ---------------------------------------------------------- |
 | Hosted Zone ID          | `Z052085530KX1PT8QCFKR`                                    |
 | DNS Management Role ARN | `arn:aws:iam::359373592118:role/agent-dns-management-role` |
-| Domain Name             | `agent.archil.io`                                          |
+| Domain Name             | `ask.archil.io`                                            |
 | Root Account ID         | `359373592118`                                             |
 | Web App Account ID      | `260448775808`                                             |
 
@@ -73,7 +73,7 @@ export interface EnvironmentConfig {
 const environments: Record<Stage, EnvironmentConfig> = {
   [Stage.prod]: {
     // ... existing config ...
-    domainName: "agent.archil.io",
+    domainName: "ask.archil.io",
     hostedZoneId: "Z052085530KX1PT8QCFKR",
     dnsRoleArn: "arn:aws:iam::359373592118:role/agent-dns-management-role",
   },
@@ -188,14 +188,14 @@ this.role.addToPrincipalPolicy(
 
 | Value          | Risk Level | Reason                                                        |
 | -------------- | ---------- | ------------------------------------------------------------- |
-| Hosted Zone ID | **Low**    | Discoverable via DNS queries (`dig NS agent.archil.io`)       |
+| Hosted Zone ID | **Low**    | Discoverable via DNS queries (`dig NS ask.archil.io`)         |
 | Role ARN       | **Low**    | Follows predictable pattern; knowing ARN doesn't grant access |
 
 **Security is enforced by:**
 
 1. **IAM Trust Policies** - Only account `260448775808` can assume the DNS role
 2. **IAM Permissions** - The role only allows DNS record management in the specific zone
-3. **GitHub OIDC** - Only the `archil-l/archil-io-v2` repository can authenticate
+3. **GitHub OIDC** - Only the `archil-l/ask-archil-io` repository can authenticate
 
 ### Recommendation
 
@@ -211,10 +211,10 @@ After implementation, deploy with:
 
 ```bash
 # Deploy the OIDC stack first (if permissions changed)
-npx cdk deploy archil-io-v2-github-oidc-prod
+npx cdk deploy ask-archil-io-github-oidc-prod
 
 # Deploy the web app stack
-npx cdk deploy archil-io-v2-prod
+npx cdk deploy ask-archil-io-prod
 ```
 
 Or push to `main` branch to trigger GitHub Actions deployment.
@@ -226,9 +226,9 @@ After deployment:
 1. Check certificate status in ACM console (should be "Issued")
 2. Verify DNS record exists:
    ```bash
-   dig A agent.archil.io
+   dig A ask.archil.io
    ```
-3. Access the site at `https://agent.archil.io`
+3. Access the site at `https://ask.archil.io`
 
 ## Rollback
 

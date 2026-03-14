@@ -9,7 +9,7 @@ import { SecretsStack } from "./lib/secrets-stack.js";
 import { getEnvironmentConfig, Stage } from "./config/environments.js";
 
 const GITHUB_ORG = "archil-l";
-const GITHUB_REPO = "archil-io-v2";
+const GITHUB_REPO = "ask-archil-io";
 
 const app = new cdk.App();
 
@@ -23,7 +23,7 @@ console.log(
 // Secrets Stack - manages JWT signing secret
 const secretsStack = new SecretsStack(
   app,
-  `archil-io-v2-secrets-${envConfig.stage}`,
+  `ask-archil-io-secrets-${envConfig.stage}`,
   {
     envConfig,
     env: {
@@ -34,7 +34,7 @@ const secretsStack = new SecretsStack(
 );
 
 // OIDC Stack - for GitHub Actions authentication
-new GitHubOidcStack(app, `archil-io-v2-github-oidc-${envConfig.stage}`, {
+new GitHubOidcStack(app, `ask-archil-io-github-oidc-${envConfig.stage}`, {
   envConfig,
   githubOrg: GITHUB_ORG,
   githubRepo: GITHUB_REPO,
@@ -48,9 +48,9 @@ new GitHubOidcStack(app, `archil-io-v2-github-oidc-${envConfig.stage}`, {
 // Optionally updates NS delegation in parent account via custom resource
 const subdomainStack = new SubdomainStack(
   app,
-  `archil-io-v2-subdomain-${envConfig.stage}`,
+  `ask-archil-io-subdomain-${envConfig.stage}`,
   {
-    domainName: envConfig.domainName || "agent.archil.io",
+    domainName: envConfig.domainName || "",
     parentHostedZoneId: envConfig.parentHostedZoneId,
     parentDelegationRoleArn: envConfig.parentDelegationRoleArn,
     env: {
@@ -63,7 +63,7 @@ const subdomainStack = new SubdomainStack(
 // LLM Streaming Stack - separate Lambda with Function URL for streaming responses
 const llmStreamStack = new LLMStreamStack(
   app,
-  `archil-io-v2-llm-stream-${envConfig.stage}`,
+  `ask-archil-io-llm-stream-${envConfig.stage}`,
   {
     envConfig,
     secretsStack,
@@ -78,7 +78,7 @@ const llmStreamStack = new LLMStreamStack(
 llmStreamStack.addDependency(secretsStack);
 
 // Application Stack - the actual web app
-const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
+const webAppStack = new WebAppStack(app, `ask-archil-io-${envConfig.stage}`, {
   envConfig,
   subdomainStack,
   secretsStack,

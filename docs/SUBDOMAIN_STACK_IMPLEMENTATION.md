@@ -1,18 +1,18 @@
 # Subdomain Stack Implementation Guide
 
-This document explains how the SubdomainStack pattern has been integrated into the archil-io-v2 project to implement custom domain support with proper DNS delegation.
+This document explains how the SubdomainStack pattern has been integrated into the ask-archil-io project to implement custom domain support with proper DNS delegation.
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ARCHIL-IO-V2 APPLICATION                         │
+│                    ask-archil-io APPLICATION                         │
 │                                                                      │
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │ SubdomainStack (cdk/lib/subdomain-stack.ts)                  │   │
 │  │ ────────────────────────────────────────────────────────────  │   │
-│  │ • Route 53 Hosted Zone: agent.archil.io                      │   │
-│  │ • ACM Certificate: *.agent.archil.io                         │   │
+│  │ • Route 53 Hosted Zone: ask.archil.io                      │   │
+│  │ • ACM Certificate: *.ask.archil.io                         │   │
 │  │ • DNS Validation: Self-validated (owned zone)                │   │
 │  │                                                               │   │
 │  │ Outputs:                                                      │   │
@@ -26,8 +26,8 @@ This document explains how the SubdomainStack pattern has been integrated into t
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │ WebAppStack (cdk/lib/web-app-stack.ts)                       │   │
 │  │ ────────────────────────────────────────────────────────────  │   │
-│  │ • CloudFront Distribution: agent.archil.io                   │   │
-│  │ • Route 53 A Record: agent.archil.io → CloudFront            │   │
+│  │ • CloudFront Distribution: ask.archil.io                   │   │
+│  │ • Route 53 A Record: ask.archil.io → CloudFront            │   │
 │  │ • Lambda Function: Remix SSR                                 │   │
 │  │ • S3 Bucket: Static assets                                   │   │
 │  └──────────────────────────────────────────────────────────────┘   │
@@ -41,7 +41,7 @@ This document explains how the SubdomainStack pattern has been integrated into t
 
 The `SubdomainStack` is a reusable CDK construct that:
 
-- **Creates a hosted zone** for the subdomain (e.g., `agent.archil.io`)
+- **Creates a hosted zone** for the subdomain (e.g., `ask.archil.io`)
 - **Creates an ACM certificate** with DNS validation using the owned zone
 - **Outputs nameservers** for NS delegation setup in the parent account
 - **Exports certificate ARN** for use in other stacks
@@ -109,15 +109,15 @@ The CDK app now deploys both stacks with proper dependency ordering:
 // 1. Create SubdomainStack first
 const subdomainStack = new SubdomainStack(
   app,
-  `archil-io-v2-subdomain-${envConfig.stage}`,
+  `ask-archil-io-subdomain-${envConfig.stage}`,
   {
-    domainName: envConfig.domainName || "agent.archil.io",
+    domainName: envConfig.domainName || "ask.archil.io",
     env: { account: envConfig.accountId, region: envConfig.region },
   },
 );
 
 // 2. Create WebAppStack with SubdomainStack reference
-const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
+const webAppStack = new WebAppStack(app, `ask-archil-io-${envConfig.stage}`, {
   envConfig,
   subdomainStack, // Pass reference
   env: { account: envConfig.accountId, region: envConfig.region },
@@ -147,10 +147,10 @@ Or deploy individually:
 
 ```bash
 # Deploy SubdomainStack first
-npx cdk deploy archil-io-v2-subdomain-prod
+npx cdk deploy ask-archil-io-subdomain-prod
 
 # Then deploy WebAppStack
-npx cdk deploy archil-io-v2-prod
+npx cdk deploy ask-archil-io-prod
 ```
 
 ### Step 3: Retrieve Nameservers
@@ -159,7 +159,7 @@ After SubdomainStack deployment, get the nameservers from CloudFormation outputs
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name archil-io-v2-subdomain-prod \
+  --stack-name ask-archil-io-subdomain-prod \
   --query 'Stacks[0].Outputs'
 ```
 
@@ -204,7 +204,7 @@ Domain settings are configured in the environment config:
 const environments: Record<Stage, EnvironmentConfig> = {
   [Stage.prod]: {
     // ... other config ...
-    domainName: "agent.archil.io",
+    domainName: "ask.archil.io",
     hostedZoneId: "Z052085530KX1PT8QCFKR",
     dnsRoleArn: "arn:aws:iam::359373592118:role/agent-dns-management-role",
   },
@@ -221,7 +221,7 @@ These values are used by:
 ### 1. Domain Query
 
 ```
-user queries: agent.archil.io
+user queries: ask.archil.io
 ↓
 DNS resolver queries root nameservers
 ↓
@@ -243,7 +243,7 @@ CloudFront serves the application
 ```
 ACM Certificate created in SubdomainStack
 ↓
-Validation records created in agent.archil.io hosted zone (owned)
+Validation records created in ask.archil.io hosted zone (owned)
 ↓
 AWS ACM verifies DNS ownership
 ↓
@@ -317,8 +317,8 @@ aws route53 list-resource-record-sets \
   --query "ResourceRecordSets[?Type=='NS']"
 
 # Test DNS resolution
-dig agent.archil.io NS
-dig @ns-111.awsdns-11.com agent.archil.io A
+dig ask.archil.io NS
+dig @ns-111.awsdns-11.com ask.archil.io A
 ```
 
 ### Issue: CloudFront returns 403 errors
@@ -344,13 +344,13 @@ To remove all infrastructure:
 
 ```bash
 # Delete WebAppStack
-npx cdk destroy archil-io-v2-prod
+npx cdk destroy ask-archil-io-prod
 
 # Delete SubdomainStack
-npx cdk destroy archil-io-v2-subdomain-prod
+npx cdk destroy ask-archil-io-subdomain-prod
 
 # Delete OIDC Stack (if no longer needed)
-npx cdk destroy archil-io-v2-github-oidc-prod
+npx cdk destroy ask-archil-io-github-oidc-prod
 
 # In root account, remove NS delegation
 cd ../ns-records-archil-io

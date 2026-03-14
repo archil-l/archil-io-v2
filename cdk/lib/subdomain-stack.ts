@@ -17,14 +17,14 @@ export interface SubdomainStackProps extends cdk.StackProps {
  * Subdomain Stack - for creating a subdomain hosted zone and ACM certificate
  *
  * This stack creates:
- * - A hosted zone for the subdomain (e.g., agent.archil.io)
+ * - A hosted zone for the subdomain (e.g., ask.archil.io)
  * - An ACM certificate with DNS validation using the owned zone
  * - Optionally updates NS delegation records in parent account via custom resource
  *
  * Usage in consuming account:
  * const subdomainStack = new SubdomainStack(app, "agent-subdomain-stack", {
  *   env: { account: "260448775808", region: "us-east-1" },
- *   domainName: "agent.archil.io",
+ *   domainName: "ask.archil.io",
  *   parentHostedZoneId: "Z<parent-zone-id>",
  *   parentDelegationRoleArn: "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
  * });

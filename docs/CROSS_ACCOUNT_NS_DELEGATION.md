@@ -14,12 +14,12 @@ The implementation uses a **CDK custom resource with Lambda** to enable automati
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ Child Account (260448775808) - archil-io-v2        │
+│ Child Account (260448775808) - ask-archil-io        │
 │                                                     │
 │  ┌──────────────────────────────────────────────┐   │
 │  │ SubdomainStack Deployment                    │   │
 │  │ ──────────────────────────────────────────   │   │
-│  │ 1. Create hosted zone (agent.archil.io)     │   │
+│  │ 1. Create hosted zone (ask.archil.io)     │   │
 │  │ 2. ↓ Trigger custom resource                │   │
 │  │    ┌─────────────────────────────────────┐  │   │
 │  │    │ Lambda-Backed Custom Resource       │  │   │
@@ -39,7 +39,7 @@ The implementation uses a **CDK custom resource with Lambda** to enable automati
 │                                                     │
 │  Route 53: archil.io zone                          │
 │  ──────────────────────────────────────────────    │
-│  NS record for agent.archil.io                     │
+│  NS record for ask.archil.io                     │
 │  → ns-111.awsdns-11.com                            │
 │  → ns-222.awsdns-22.net                            │
 │  → ns-333.awsdns-33.org                            │
@@ -82,7 +82,7 @@ Updated to include:
 
 ```typescript
 {
-  domainName: "agent.archil.io",
+  domainName: "ask.archil.io",
   parentHostedZoneId: "Z01234567890ABC", // Parent zone ID
   parentDelegationRoleArn: "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
 }
@@ -173,7 +173,7 @@ Update `cdk/config/environments.ts`:
 
 ```typescript
 {
-  domainName: "agent.archil.io",
+  domainName: "ask.archil.io",
   parentHostedZoneId: "Z01234567890ABC", // From parent stack outputs
   parentDelegationRoleArn: "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
 }
@@ -182,7 +182,7 @@ Update `cdk/config/environments.ts`:
 ### Step 3: Deploy Child Account Stack
 
 ```bash
-cd archil-io-v2
+cd ask-archil-io
 npx cdk deploy
 ```
 
@@ -221,11 +221,11 @@ Common failure reasons:
 # Query parent zone for NS delegation
 aws route53 list-resource-record-sets \
   --hosted-zone-id Z01234567890ABC \
-  --query "ResourceRecordSets[?Type=='NS' && Name=='agent.archil.io.']"
+  --query "ResourceRecordSets[?Type=='NS' && Name=='ask.archil.io.']"
 
 # Expected output:
 # {
-#   "Name": "agent.archil.io.",
+#   "Name": "ask.archil.io.",
 #   "Type": "NS",
 #   "TTL": 3600,
 #   "ResourceRecords": [
@@ -241,7 +241,7 @@ aws route53 list-resource-record-sets \
 
 ```bash
 # Query DNS for the subdomain
-dig agent.archil.io NS
+dig ask.archil.io NS
 
 # Should resolve to the child account's nameservers
 ```
@@ -253,7 +253,7 @@ If deployment fails, check the custom resource Lambda logs:
 ```bash
 # Find the custom resource logical ID in CloudFormation events
 aws cloudformation describe-stack-events \
-  --stack-name archil-io-v2-subdomain-prod \
+  --stack-name ask-archil-io-subdomain-prod \
   --query "StackEvents[?ResourceType=='AWS::CloudFormation::CustomResource']"
 
 # Check Lambda logs
@@ -262,13 +262,13 @@ aws logs tail /aws/lambda/FUNCTION_NAME --follow
 
 ## Configuration Reference
 
-### Child Account (archil-io-v2)
+### Child Account (ask-archil-io)
 
 **File:** `cdk/config/environments.ts`
 
 ```typescript
 {
-  domainName: "agent.archil.io",
+  domainName: "ask.archil.io",
   parentHostedZoneId: "Z01234567890ABC",
   parentDelegationRoleArn: "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
 }
@@ -322,7 +322,7 @@ delegatedSubdomains: [
 1. Wait for DNS TTL to expire (up to 1 hour)
 2. Test DNS resolution:
    ```bash
-   dig agent.archil.io NS
+   dig ask.archil.io NS
    ```
 3. Check CloudFormation stack events for errors
 

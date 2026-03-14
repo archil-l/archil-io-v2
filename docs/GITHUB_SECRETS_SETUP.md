@@ -10,14 +10,14 @@ Add these secrets to your GitHub repository:
 
 **`AWS_ROLE_ARN_DEV`**
 
-- Value: Output from `cdk deploy archil-io-v2-github-oidc-dev`
-- Format: `arn:aws:iam::111111111111:role/archil-io-v2-github-actions-role-dev`
+- Value: Output from `cdk deploy ask-archil-io-github-oidc-dev`
+- Format: `arn:aws:iam::111111111111:role/ask-archil-io-github-actions-role-dev`
 - Description: OIDC role for dev deployments
 
 **`AWS_ROLE_ARN_PROD`**
 
-- Value: Output from `cdk deploy archil-io-v2-github-oidc-prod`
-- Format: `arn:aws:iam::222222222222:role/archil-io-v2-github-actions-role-prod`
+- Value: Output from `cdk deploy ask-archil-io-github-oidc-prod`
+- Format: `arn:aws:iam::222222222222:role/ask-archil-io-github-actions-role-prod`
 - Description: OIDC role for prod deployments
 
 ### 2. AWS Account IDs
@@ -83,10 +83,10 @@ After adding all secrets, verify:
 
 ```bash
 # Dev
-aws iam get-role --role-name archil-io-v2-github-actions-role-dev --profile archil-dev --query 'Role.Arn' --output text
+aws iam get-role --role-name ask-archil-io-github-actions-role-dev --profile archil-dev --query 'Role.Arn' --output text
 
 # Prod
-aws iam get-role --role-name archil-io-v2-github-actions-role-prod --profile archil-prod --query 'Role.Arn' --output text
+aws iam get-role --role-name ask-archil-io-github-actions-role-prod --profile archil-prod --query 'Role.Arn' --output text
 ```
 
 ### Get AWS Account ID

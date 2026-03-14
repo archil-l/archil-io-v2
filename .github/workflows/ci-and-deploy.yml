@@ -115,11 +115,11 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/archil-io-v2-github-actions-role-prod
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ask-archil-io-github-actions-role-prod
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy application stack
-        run: npx cdk deploy archil-io-v2-prod --require-approval never
+        run: npx cdk deploy ask-archil-io-prod --require-approval never
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
           CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
@@ -130,8 +130,8 @@ jobs:
       - name: Get deployment outputs
         id: deployment
         run: |
-          aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs' --output table
-          CLOUDFRONT_URL=$(aws cloudformation describe-stacks --stack-name archil-io-v2-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs[?OutputKey==`RemixCloudFrontUrl`].OutputValue' --output text)
+          aws cloudformation describe-stacks --stack-name ask-archil-io-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs' --output table
+          CLOUDFRONT_URL=$(aws cloudformation describe-stacks --stack-name ask-archil-io-prod --region ${{ secrets.AWS_REGION }} --query 'Stacks[0].Outputs[?OutputKey==`RemixCloudFrontUrl`].OutputValue' --output text)
           echo "cloudfront_url=$CLOUDFRONT_URL" >> $GITHUB_OUTPUT
 
       - name: Post deployment summary
@@ -145,4 +145,4 @@ jobs:
           echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**CloudFront URL**: ${{ steps.deployment.outputs.cloudfront_url }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Next**: Point agent.archil.io CNAME to CloudFront domain" >> $GITHUB_STEP_SUMMARY
+          echo "**Next**: Point ask.archil.io CNAME to CloudFront domain" >> $GITHUB_STEP_SUMMARY

@@ -39,7 +39,7 @@ export class WebAppStack extends cdk.Stack {
 
     // S3 bucket for static assets
     const assetsBucket = new s3.Bucket(this, "remix-assets-bucket", {
-      bucketName: `archil-io-v2-${envConfig.stage}-remix-assets-bucket`,
+      bucketName: `ask-archil-io-${envConfig.stage}-remix-assets-bucket`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: false,
@@ -145,7 +145,7 @@ export class WebAppStack extends cdk.Stack {
 
     // Lambda function using custom code asset
     const remixFunction = new lambda.Function(this, "web-app-function", {
-      functionName: `archil-io-v2-${envConfig.stage}-web-app-function`,
+      functionName: `ask-archil-io-${envConfig.stage}-web-app-function`,
       code: lambda.Code.fromAsset(
         path.join(__dirname, "../../../dist/lambda-pkg"),
       ),

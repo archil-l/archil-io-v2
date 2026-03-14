@@ -30,7 +30,7 @@ export class GitHubOidcStack extends cdk.Stack {
 
     // Create IAM Role for GitHub Actions
     this.role = new iam.Role(this, "github-actions-role", {
-      roleName: `archil-io-v2-github-actions-role-${envConfig.stage}`,
+      roleName: `ask-archil-io-github-actions-role-${envConfig.stage}`,
       assumedBy: new iam.FederatedPrincipal(
         this.oidcProvider.openIdConnectProviderArn,
         {
@@ -145,7 +145,7 @@ export class GitHubOidcStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["iam:PassRole"],
         resources: [
-          `arn:aws:iam::${this.account}:role/archil-io-v2-lambda-execution-role-${envConfig.stage}`,
+          `arn:aws:iam::${this.account}:role/ask-archil-io-lambda-execution-role-${envConfig.stage}`,
         ],
       }),
     );
@@ -164,7 +164,7 @@ export class GitHubOidcStack extends cdk.Stack {
           "iam:GetRole",
           "iam:DeleteRole",
         ],
-        resources: [`arn:aws:iam::${this.account}:role/archil-io-v2-*`],
+        resources: [`arn:aws:iam::${this.account}:role/ask-archil-io-*`],
       }),
     );
 
@@ -198,7 +198,7 @@ export class GitHubOidcStack extends cdk.Stack {
     new cdk.CfnOutput(this, "github-actions-role-arn", {
       description: "ARN of the GitHub Actions IAM role (use in GitHub Secrets)",
       value: this.role.roleArn,
-      exportName: `archil-io-v2-github-actions-role-arn-${envConfig.stage}`,
+      exportName: `ask-archil-io-github-actions-role-arn-${envConfig.stage}`,
     });
 
     new cdk.CfnOutput(this, "oidc-provider-arn", {

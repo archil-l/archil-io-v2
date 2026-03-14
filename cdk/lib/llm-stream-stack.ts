@@ -24,7 +24,7 @@ export class LLMStreamStack extends cdk.Stack {
 
     // Lambda function for LLM streaming
     const streamingFunction = new lambda.Function(this, "llm-stream-function", {
-      functionName: `archil-io-v2-${envConfig.stage}-llm-stream-function`,
+      functionName: `ask-archil-io-${envConfig.stage}-llm-stream-function`,
       code: lambda.Code.fromAsset(
         path.join(__dirname, "../../../dist/streaming-lambda"),
       ),
@@ -49,7 +49,7 @@ export class LLMStreamStack extends cdk.Stack {
       authType: lambda.FunctionUrlAuthType.NONE,
       invokeMode: lambda.InvokeMode.RESPONSE_STREAM,
       cors: {
-        allowedOrigins: ["https://agent.archil.io", "http://localhost:5173"],
+        allowedOrigins: ["https://ask.archil.io", "http://localhost:5173"],
         allowedMethods: [lambda.HttpMethod.ALL],
         allowedHeaders: ["Content-Type", "Authorization"],
         allowCredentials: true,

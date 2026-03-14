@@ -37,7 +37,7 @@ This document outlines the implementation plan for adding JWT-based token authen
 **Components**:
 
 - AWS Secrets Manager to store the JWT signing secret
-- Secret name: `archil-io-v2-jwt-secret-{stage}`
+- Secret name: `ask-archil-io-jwt-secret-{stage}`
 - Secret value: 256-bit cryptographically secure random key (for HS256 algorithm)
 - Export secret ARN for use by other stacks
 
@@ -67,7 +67,7 @@ interface SecretsStackProps extends cdk.StackProps {
 - **Token Lifetime**: 1 hour (3600 seconds)
 - **Global Token**: Single token generated at startup, reused for all requests
 - **Claims**:
-  - `iss` (issuer): "archil-io-v2"
+  - `iss` (issuer): "ask-archil-io"
   - `iat` (issued at): Current timestamp
   - `exp` (expiration): Current timestamp + 3600 seconds
   - `sub` (subject): "app" (since it's a global app token)
@@ -266,12 +266,12 @@ streamingFunction.addEnvironment("JWT_SECRET_ARN", secretsStack.jwtSecretArn);
 // Create Secrets Stack
 const secretsStack = new SecretsStack(
   app,
-  `archil-io-v2-secrets-${envConfig.stage}`,
+  `ask-archil-io-secrets-${envConfig.stage}`,
   { envConfig },
 );
 
 // Pass to other stacks
-const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
+const webAppStack = new WebAppStack(app, `ask-archil-io-${envConfig.stage}`, {
   envConfig,
   subdomainStack,
   secretsStack,
@@ -279,7 +279,7 @@ const webAppStack = new WebAppStack(app, `archil-io-v2-${envConfig.stage}`, {
 
 const llmStreamStack = new LLMStreamStack(
   app,
-  `archil-io-v2-llm-stream-${envConfig.stage}`,
+  `ask-archil-io-llm-stream-${envConfig.stage}`,
   { envConfig, secretsStack },
 );
 ```

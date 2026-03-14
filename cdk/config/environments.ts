@@ -44,7 +44,7 @@ const environments: Record<Stage, EnvironmentConfig> = {
     logRetentionDays: 30,
     htmlCacheTtlMinutes: 60,
     assetsCacheTtlDays: 30,
-    domainName: "agent.archil.io",
+    domainName: "ask.archil.io",
     parentHostedZoneId: "Z00681622F9CUFDPFSU6B",
     parentDelegationRoleArn:
       "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",

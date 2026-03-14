@@ -1,4 +1,4 @@
-# Codebase Overview — archil-io-v2
+# Codebase Overview — ask-archil-io
 
 AI-powered personal website for Archil Lelashvili. Visitors interact with a Claude-powered chat assistant that can answer questions, show the resume, and toggle the site theme.
 
@@ -23,7 +23,7 @@ AI-powered personal website for Archil Lelashvili. Visitors interact with a Clau
 ## Repository Structure
 
 ```
-archil-io-v2/
+ask-archil-io/
 ├── src/app/                    # Application source
 │   ├── routes/                 # React Router routes
 │   ├── features/welcome/       # Chat UI feature
@@ -196,7 +196,7 @@ Client → POST LLM_STREAM_URL
 **JWT payload:**
 
 ```json
-{ "iss": "archil-io-v2", "sub": "app", "iat": ..., "exp": ... }
+{ "iss": "ask-archil-io", "sub": "app", "iat": ..., "exp": ... }
 ```
 
 **Algorithm**: HS256
@@ -208,7 +208,7 @@ Client → POST LLM_STREAM_URL
 
 **Entry**: `cdk/app.ts`
 **Environment**: `cdk/config/environments.ts`
-**Domain**: `agent.archil.io`
+**Domain**: `ask.archil.io`
 **AWS Account**: `260448775808` / `us-east-1`
 
 ### Stacks (deployed in order)
@@ -221,23 +221,23 @@ Client → POST LLM_STREAM_URL
 #### 2. GitHubOIDCStack
 
 - OpenID Connect provider for GitHub Actions
-- IAM role: `archil-io-v2-github-actions-role-prod`
-- Trusted repo: `archil-l/archil-io-v2`
+- IAM role: `ask-archil-io-github-actions-role-prod`
+- Trusted repo: `archil-l/ask-archil-io`
 - Permissions: PowerUserAccess + CloudFormation
 
 #### 3. SubdomainStack
 
-- Route 53 hosted zone for `agent.archil.io`
+- Route 53 hosted zone for `ask.archil.io`
 - ACM certificate (DNS validation)
 - Custom Lambda resource to delegate NS records to parent zone
 
 #### 4. LlmStreamStack
 
-- Lambda function: `archil-io-v2-prod-llm-stream-function`
+- Lambda function: `ask-archil-io-prod-llm-stream-function`
 - Code: `dist/streaming-lambda/streaming-handler.js`
 - Runtime: Node 24.x, 1024 MB RAM, 5 min timeout
 - Invoke mode: `RESPONSE_STREAM` (streaming)
-- Function URL with CORS for `https://agent.archil.io` + `http://localhost:5173`
+- Function URL with CORS for `https://ask.archil.io` + `http://localhost:5173`
 - Auth type: NONE (JWT validated in handler)
 
 #### 5. WebAppStack
@@ -248,12 +248,12 @@ Client → POST LLM_STREAM_URL
   - Assets cache: 30 days
   - Gzip + Brotli compression
   - 403 → 404.html error page
-- **Lambda** (web app): `archil-io-v2-prod-web-app-function`
+- **Lambda** (web app): `ask-archil-io-prod-web-app-function`
   - Code: `dist/lambda-pkg/web-app-handler.js`
   - Timeout: 30s, 1024 MB
   - Handles SSR + API routes via `serverless-http`
 - **HTTP API Gateway v2**: Routes `/` and `/{proxy+}` → web app Lambda
-- **Route 53 A record**: `agent.archil.io` → API Gateway alias
+- **Route 53 A record**: `ask.archil.io` → API Gateway alias
 
 ---
 
@@ -283,7 +283,7 @@ Client → POST LLM_STREAM_URL
 - AWS OIDC login — no stored credentials
 - Downloads build artifacts
 - `npm run cdk:build` — compiles CDK TypeScript
-- `npm run cdk:deploy:main` — deploys `archil-io-v2-prod` stack
+- `npm run cdk:deploy:main` — deploys `ask-archil-io-prod` stack
 - Posts deployment summary with CloudFront URL
 
 **GitHub Secrets required:**
@@ -389,7 +389,7 @@ npm run release
 
 1. **JWT**: All streaming requests require a valid short-lived JWT; secret lives in Secrets Manager
 2. **CAPTCHA**: Cloudflare Turnstile validates real users before streaming
-3. **CORS**: Streaming Lambda only accepts requests from `agent.archil.io` and `localhost:5173`
+3. **CORS**: Streaming Lambda only accepts requests from `ask.archil.io` and `localhost:5173`
 4. **OIDC**: GitHub Actions authenticates via OIDC — no long-lived AWS credentials stored
 5. **SSR bot detection**: Server entry (`entry.server.tsx`) uses `isbot` to detect crawlers and renders differently
 6. **Secrets**: All API keys injected at deploy time, never committed

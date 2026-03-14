@@ -1,6 +1,6 @@
 # Cloudflare Turnstile CAPTCHA Integration Guide
 
-This guide provides complete instructions for integrating Cloudflare Turnstile CAPTCHA into the archil-io-v2 project. The CAPTCHA will be displayed once per session before users can send their first message in the chat.
+This guide provides complete instructions for integrating Cloudflare Turnstile CAPTCHA into the ask-archil-io project. The CAPTCHA will be displayed once per session before users can send their first message in the chat.
 
 ## Table of Contents
 
@@ -40,8 +40,8 @@ This guide provides complete instructions for integrating Cloudflare Turnstile C
 2. Navigate to **Account Home** → **Turnstile**
 3. Click **Create Site**
 4. Fill in the form:
-   - **Site name**: `archil-io-v2` (or your preferred name)
-   - **Domain**: Your deployment domain (e.g., `agent.archil.io`)
+   - **Site name**: `ask-archil-io` (or your preferred name)
+   - **Domain**: Your deployment domain (e.g., `ask.archil.io`)
    - **Mode**: Select **Managed** (recommended for simplicity)
 5. Click **Create**
 
@@ -60,7 +60,7 @@ After creating the site, you'll see:
 
 ### Step 1: Add Secrets to GitHub Repository
 
-1. Go to your GitHub repository: `https://github.com/archil-l/archil-io-v2`
+1. Go to your GitHub repository: `https://github.com/archil-l/ask-archil-io`
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret** for each:
 
@@ -128,7 +128,7 @@ The CI/CD pipeline will automatically inject these secrets. Update `.github/work
 deploy:
   # ... existing steps ...
   - name: Deploy application stack
-    run: npx cdk deploy archil-io-v2-prod --require-approval never
+    run: npx cdk deploy ask-archil-io-prod --require-approval never
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
       CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
@@ -640,7 +640,7 @@ Before deploying to production:
 2. Confirm environment variable is passed to Lambda:
    ```bash
    aws lambda get-function-configuration \
-     --function-name archil-io-v2-WebAppFunction-xxx \
+     --function-name ask-archil-io-WebAppFunction-xxx \
      --query Environment.Variables
    ```
 3. Check that secret key matches the site created in Cloudflare
@@ -656,7 +656,7 @@ Before deploying to production:
 2. Verify CDK deployment includes the environment variable
 3. Check CloudWatch logs for the Lambda function:
    ```bash
-   aws logs tail /aws/lambda/archil-io-v2-WebAppFunction-xxx --follow
+   aws logs tail /aws/lambda/ask-archil-io-WebAppFunction-xxx --follow
    ```
 
 ### CAPTCHA Expires Too Quickly
