@@ -174,7 +174,7 @@ export class GitHubOidcStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["sts:AssumeRole"],
         resources: [
-          "arn:aws:iam::359373592118:role/agent-archil-io-dns-delegation-role",
+          "arn:aws:iam::359373592118:role/ask-archil-io-dns-delegation-role",
         ],
       }),
     );
