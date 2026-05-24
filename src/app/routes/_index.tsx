@@ -45,7 +45,6 @@ const JSON_LD = JSON.stringify({
 });
 
 export const meta: MetaFunction = () => [
-  { tagName: "link", rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
   { title: "Archil Lelashvili – Software Engineer" },
   { name: "description", content: DESCRIPTION },
   { name: "robots", content: "index, follow" },

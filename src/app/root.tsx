@@ -5,8 +5,9 @@ import "./css/tailwind.css";
 import { ThemeProvider } from "./contexts/theme-context";
 
 export const links: LinksFunction = () => [
-  { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-  { rel: "apple-touch-icon", href: "/profile-pic-og.png" },
+  { rel: "icon", href: "/favicon.ico", sizes: "any" },
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/profile-pic-apple.png" },
+  { rel: "manifest", href: "/site.webmanifest" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
